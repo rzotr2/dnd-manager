@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Palette, Sword, Zap, ScrollText } from 'lucide-react';
+import { Palette, Sword, Zap, ScrollText, Target, Minimize2, RotateCcw, Rocket, MapPin, Skull } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -33,6 +33,48 @@ const themes: Theme[] = [
     icon: <ScrollText className="w-6 h-6" />,
     description: 'Традиційний D&D стиль з пергаментом',
     className: 'theme-classic'
+  },
+  {
+    id: 'stalker',
+    name: 'Сталкер',
+    icon: <Target className="w-6 h-6" />,
+    description: 'Атмосфера Зони та радіації',
+    className: 'theme-stalker'
+  },
+  {
+    id: 'minimalist',
+    name: 'Мінімалізм',
+    icon: <Minimize2 className="w-6 h-6" />,
+    description: 'Чистий та сучасний дизайн',
+    className: 'theme-minimalist'
+  },
+  {
+    id: 'retro',
+    name: 'Ретро',
+    icon: <RotateCcw className="w-6 h-6" />,
+    description: 'Теплі кольори минулого',
+    className: 'theme-retro'
+  },
+  {
+    id: 'space',
+    name: 'Космос',
+    icon: <Rocket className="w-6 h-6" />,
+    description: 'Холодні тони далекого космосу',
+    className: 'theme-space'
+  },
+  {
+    id: 'western',
+    name: 'Вестерн',
+    icon: <MapPin className="w-6 h-6" />,
+    description: 'Теплі тони Дикого Заходу',
+    className: 'theme-western'
+  },
+  {
+    id: 'apocalypse',
+    name: 'Постапокаліпсис',
+    icon: <Skull className="w-6 h-6" />,
+    description: 'Похмурий світ після катастрофи',
+    className: 'theme-apocalypse'
   }
 ];
 
@@ -49,7 +91,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme, onThemeChan
         <h2 className="text-2xl font-bold">Оберіть тему оформлення</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {themes.map((theme) => (
           <Card 
             key={theme.id}

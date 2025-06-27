@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,11 +85,29 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'dice-roll': {
+					'0%': { transform: 'rotate(0deg) scale(1)' },
+					'25%': { transform: 'rotate(90deg) scale(1.1)' },
+					'50%': { transform: 'rotate(180deg) scale(1.2)' },
+					'75%': { transform: 'rotate(270deg) scale(1.1)' },
+					'100%': { transform: 'rotate(360deg) scale(1)' }
+				},
+				'glow-pulse': {
+					'0%, 100%': { boxShadow: '0 0 5px var(--primary)' },
+					'50%': { boxShadow: '0 0 20px var(--primary), 0 0 30px var(--primary)' }
+				},
+				'fade-in': {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'dice-roll': 'dice-roll 0.6s ease-in-out',
+				'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+				'fade-in': 'fade-in 0.5s ease-out'
 			}
 		}
 	},

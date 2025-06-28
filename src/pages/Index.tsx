@@ -16,7 +16,7 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  useEffect() => {
+  useEffect(() => {
     document.body.className = currentTheme;
   }, [currentTheme]);
 

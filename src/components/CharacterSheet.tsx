@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Plus, Edit3, Trash2, Save, Upload, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,12 @@ interface Character {
   name: string;
   photo?: string;
   fields: CharacterField[];
+}
+
+interface NewFieldState {
+  name: string;
+  type: 'text' | 'number' | 'textarea';
+  category: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other';
 }
 
 const CharacterSheet: React.FC = () => {
@@ -49,7 +54,11 @@ const CharacterSheet: React.FC = () => {
   
   const [activeCharacter, setActiveCharacter] = useState('1');
   const [isEditing, setIsEditing] = useState(false);
-  const [newField, setNewField] = useState({ name: '', type: 'text' as const, category: 'other' as const });
+  const [newField, setNewField] = useState<NewFieldState>({ 
+    name: '', 
+    type: 'text', 
+    category: 'other' 
+  });
 
   const currentCharacter = characters.find(c => c.id === activeCharacter);
 
@@ -266,7 +275,12 @@ const CharacterSheet: React.FC = () => {
                             value={newField.name}
                             onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
                           />
-                          <Select value={newField.type} onValueChange={(value: 'text' | 'number' | 'textarea') => setNewField(prev => ({ ...prev, type: value }))}>
+                          <Select 
+                            value={newField.type} 
+                            onValueChange={(value: 'text' | 'number' | 'textarea') => 
+                              setNewField(prev => ({ ...prev, type: value }))
+                            }
+                          >
                             <SelectTrigger className="w-32">
                               <SelectValue />
                             </SelectTrigger>
@@ -276,7 +290,12 @@ const CharacterSheet: React.FC = () => {
                               <SelectItem value="textarea">Опис</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Select value={newField.category} onValueChange={(value: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other') => setNewField(prev => ({ ...prev, category: value }))}>
+                          <Select 
+                            value={newField.category} 
+                            onValueChange={(value: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other') => 
+                              setNewField(prev => ({ ...prev, category: value }))
+                            }
+                          >
                             <SelectTrigger className="w-40">
                               <SelectValue />
                             </SelectTrigger>

@@ -40,7 +40,17 @@ export const useCharacters = (gameId: string | null) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCharacters(data || []);
+      
+      // Transform data to match our Character interface
+      const transformedData = (data || []).map(char => ({
+        id: char.id,
+        game_id: char.game_id,
+        name: char.name,
+        photo: char.photo || undefined,
+        fields: Array.isArray(char.fields) ? char.fields as CharacterField[] : []
+      }));
+      
+      setCharacters(transformedData);
     } catch (error) {
       console.error('Error fetching characters:', error);
       toast({
@@ -61,7 +71,10 @@ export const useCharacters = (gameId: string | null) => {
       const { data, error } = await supabase
         .from('characters')
         .insert([{
-          ...characterData,
+          game_id: characterData.game_id,
+          name: characterData.name,
+          photo: characterData.photo || null,
+          fields: characterData.fields as any, // Cast to any for JSONB insertion
           user_id: user.id,
         }])
         .select()
@@ -69,13 +82,22 @@ export const useCharacters = (gameId: string | null) => {
 
       if (error) throw error;
       
-      setCharacters(prev => [data, ...prev]);
+      // Transform the returned data
+      const transformedCharacter: Character = {
+        id: data.id,
+        game_id: data.game_id,
+        name: data.name,
+        photo: data.photo || undefined,
+        fields: Array.isArray(data.fields) ? data.fields as CharacterField[] : []
+      };
+      
+      setCharacters(prev => [transformedCharacter, ...prev]);
       toast({
         title: 'Успіх',
         description: 'Персонажа створено успішно',
       });
       
-      return data;
+      return transformedCharacter;
     } catch (error) {
       console.error('Error creating character:', error);
       toast({
@@ -88,16 +110,31 @@ export const useCharacters = (gameId: string | null) => {
 
   const updateCharacter = async (characterId: string, updates: Partial<Character>) => {
     try {
+      // Prepare updates for Supabase
+      const supabaseUpdates: any = {};
+      if (updates.name !== undefined) supabaseUpdates.name = updates.name;
+      if (updates.photo !== undefined) supabaseUpdates.photo = updates.photo;
+      if (updates.fields !== undefined) supabaseUpdates.fields = updates.fields as any;
+
       const { data, error } = await supabase
         .from('characters')
-        .update(updates)
+        .update(supabaseUpdates)
         .eq('id', characterId)
         .select()
         .single();
 
       if (error) throw error;
       
-      setCharacters(prev => prev.map(char => char.id === characterId ? data : char));
+      // Transform the returned data
+      const transformedCharacter: Character = {
+        id: data.id,
+        game_id: data.game_id,
+        name: data.name,
+        photo: data.photo || undefined,
+        fields: Array.isArray(data.fields) ? data.fields as CharacterField[] : []
+      };
+      
+      setCharacters(prev => prev.map(char => char.id === characterId ? transformedCharacter : char));
     } catch (error) {
       console.error('Error updating character:', error);
       toast({

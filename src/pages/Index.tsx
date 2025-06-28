@@ -8,11 +8,12 @@ import ThemeSelector from '@/components/ThemeSelector';
 import DiceRoller from '@/components/DiceRoller';
 import CharacterSheet from '@/components/CharacterSheet';
 import GameManager from '@/components/GameManager';
+import CombatSystem from '@/components/CombatSystem';
 import AuthForm from '@/components/AuthForm';
 
 const Index = () => {
   const [currentTheme, setCurrentTheme] = useState('theme-fantasy');
-  const [currentGame, setCurrentGame] = useState<string | null>('1');
+  const [currentGame, setCurrentGame] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
@@ -69,6 +70,7 @@ const Index = () => {
             <GameManager 
               currentGame={currentGame}
               onGameChange={setCurrentGame}
+              onThemeChange={setCurrentTheme}
             />
           </SidebarContent>
         </Sidebar>
@@ -117,7 +119,7 @@ const Index = () => {
               </TabsList>
 
               <TabsContent value="characters" className="animate-fade-in">
-                <CharacterSheet />
+                <CharacterSheet currentGameId={currentGame} />
               </TabsContent>
 
               <TabsContent value="dice" className="animate-fade-in">
@@ -125,22 +127,7 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="combat" className="animate-fade-in">
-                <Card className="glass-effect">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Sword className="w-6 h-6 text-primary" />
-                      Система бою
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center py-12">
-                    <p className="text-xl text-muted-foreground mb-4">
-                      Система бою в розробці
-                    </p>
-                    <p className="text-muted-foreground">
-                      Тут буде ініціатива, трекер HP та інші бойові механіки
-                    </p>
-                  </CardContent>
-                </Card>
+                <CombatSystem />
               </TabsContent>
 
               <TabsContent value="themes" className="animate-fade-in">
@@ -155,7 +142,7 @@ const Index = () => {
             <Card className="glass-effect">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  🎲 Поточна гра: {currentGame ? 'Подорож у Темний Ліс' : 'Не обрано'} | Тема: {currentTheme}
+                  🎲 Поточна гра: {currentGame ? 'Активна' : 'Не обрано'} | Тема: {currentTheme}
                 </p>
               </CardContent>
             </Card>

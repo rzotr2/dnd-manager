@@ -47,7 +47,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: char.game_id,
         name: char.name,
         photo: char.photo || undefined,
-        fields: Array.isArray(char.fields) ? char.fields as CharacterField[] : []
+        fields: Array.isArray(char.fields) ? char.fields as unknown as CharacterField[] : []
       }));
       
       setCharacters(transformedData);
@@ -88,7 +88,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: data.game_id,
         name: data.name,
         photo: data.photo || undefined,
-        fields: Array.isArray(data.fields) ? data.fields as CharacterField[] : []
+        fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
       };
       
       setCharacters(prev => [transformedCharacter, ...prev]);
@@ -131,7 +131,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: data.game_id,
         name: data.name,
         photo: data.photo || undefined,
-        fields: Array.isArray(data.fields) ? data.fields as CharacterField[] : []
+        fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
       };
       
       setCharacters(prev => prev.map(char => char.id === characterId ? transformedCharacter : char));

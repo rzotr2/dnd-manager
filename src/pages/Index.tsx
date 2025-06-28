@@ -10,43 +10,34 @@ import CharacterSheet from '@/components/CharacterSheet';
 import GameManager from '@/components/GameManager';
 import CombatSystem from '@/components/CombatSystem';
 import AuthForm from '@/components/AuthForm';
+import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const [currentTheme, setCurrentTheme] = useState('theme-fantasy');
   const [currentGame, setCurrentGame] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const { isAuthenticated, loading } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     document.body.className = currentTheme;
   }, [currentTheme]);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem('dnd_user');
-    if (savedUser) {
-      setIsAuthenticated(true);
-      setCurrentUser(savedUser);
-    }
-  }, []);
-
-  const handleAuthenticated = (username: string) => {
-    if (username) {
-      setIsAuthenticated(true);
-      setCurrentUser(username);
-    } else {
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex items-center justify-center p-4">
+        <div className="text-center">
+          <Shield className="w-12 h-12 text-primary mx-auto mb-4 animate-spin" />
+          <p className="text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex items-center justify-center p-4">
-        <AuthForm 
-          onAuthenticated={handleAuthenticated}
-          isAuthenticated={isAuthenticated}
-          currentUser={currentUser}
-        />
+        <AuthForm />
       </div>
     );
   }
@@ -60,11 +51,7 @@ const Index = () => {
               <Shield className="w-6 h-6 text-primary" />
               <span className="font-bold text-lg">DnD Manager</span>
             </div>
-            <AuthForm 
-              onAuthenticated={handleAuthenticated}
-              isAuthenticated={isAuthenticated}
-              currentUser={currentUser}
-            />
+            <AuthForm />
           </SidebarHeader>
           <SidebarContent className="p-4">
             <GameManager 
@@ -87,12 +74,12 @@ const Index = () => {
                 <CardTitle className="flex items-center justify-center gap-3 text-3xl md:text-4xl font-bold">
                   <Shield className="w-10 h-10 text-primary" />
                   <span className="theme-gradient bg-clip-text text-transparent">
-                    DnD Character Manager
+                    {t('app.title')}
                   </span>
                   <Scroll className="w-10 h-10 text-primary" />
                 </CardTitle>
                 <p className="text-muted-foreground text-lg">
-                  Створюйте персонажів, кидайте кубики та керуйте своїми пригодами в світі D&D
+                  {t('app.subtitle')}
                 </p>
               </CardHeader>
             </Card>
@@ -102,19 +89,19 @@ const Index = () => {
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-card/80 backdrop-blur">
                 <TabsTrigger value="characters" className="flex items-center gap-2 py-3">
                   <Users className="w-4 h-4" />
-                  <span className="hidden sm:inline">Персонажі</span>
+                  <span className="hidden sm:inline">{t('tabs.characters')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="dice" className="flex items-center gap-2 py-3">
                   <Dices className="w-4 h-4" />
-                  <span className="hidden sm:inline">Кубики</span>
+                  <span className="hidden sm:inline">{t('tabs.dice')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="combat" className="flex items-center gap-2 py-3">
                   <Sword className="w-4 h-4" />
-                  <span className="hidden sm:inline">Бій</span>
+                  <span className="hidden sm:inline">{t('tabs.combat')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="themes" className="flex items-center gap-2 py-3">
                   <Palette className="w-4 h-4" />
-                  <span className="hidden sm:inline">Теми</span>
+                  <span className="hidden sm:inline">{t('tabs.themes')}</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -142,7 +129,7 @@ const Index = () => {
             <Card className="glass-effect">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  🎲 Поточна гра: {currentGame ? 'Активна' : 'Не обрано'} | Тема: {currentTheme}
+                  🎲 {t('app.currentGame')}: {currentGame ? t('app.active') : t('app.notSelected')} | {t('app.theme')}: {currentTheme}
                 </p>
               </CardContent>
             </Card>

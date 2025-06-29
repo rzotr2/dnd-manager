@@ -44,7 +44,7 @@ const translations = {
 
     // Додаток
     'app.title': 'D&D Менеджер',
-    'app.subtitle': 'Ваш персональній помічник для керування іграми в Dungeons & Dragons',
+    'app.subtitle': 'Ваш персональний помічник для керування іграми в Dungeons & Dragons',
     'app.language': 'Мова',
     'app.currentGame': 'Поточна гра',
     'app.active': 'Активна',
@@ -107,6 +107,11 @@ const translations = {
     'themes.space': 'Космос',
     'themes.western': 'Вестерн',
     'themes.apocalypse': 'Апокаліпсис',
+
+    // Персонажі
+    'characters.title': 'Персонажі',
+    'characters.selectGame': 'Оберіть гру для роботи з персонажами',
+    'characters.noGameSelected': 'Оберіть гру для роботи з персонажами',
 
     // Повідомлення про успіх
     'success.title': 'Успішно!',
@@ -222,6 +227,11 @@ const translations = {
     'themes.space': 'Space',
     'themes.western': 'Western',
     'themes.apocalypse': 'Apocalypse',
+
+    // Characters
+    'characters.title': 'Characters',
+    'characters.selectGame': 'Select a game to work with characters',
+    'characters.noGameSelected': 'Select a game to work with characters',
 
     // Success messages
     'success.title': 'Success!',

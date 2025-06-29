@@ -5,206 +5,213 @@ type Language = 'uk' | 'en';
 
 interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (language: Language) => void;
   t: (key: string) => string;
 }
 
 const translations = {
   uk: {
-    // Authentication
-    'auth.welcome': 'Вітаємо',
-    'auth.login': 'Вхід',
-    'auth.register': 'Реєстрація',
-    'auth.email': 'Електронна пошта',
-    'auth.password': 'Пароль',
-    'auth.confirmPassword': 'Підтвердьте пароль',
-    'auth.loginButton': 'Увійти',
-    'auth.registerButton': 'Зареєструватися',
-    'auth.logout': 'Вийти',
-    'auth.username': 'Ім\'я користувача',
-    'auth.fullName': 'Повне ім\'я',
-    
-    // Main app
-    'app.title': 'DnD Character Manager',
-    'app.subtitle': 'Створюйте персонажів, кидайте кубики та керуйте своїми пригодами в світі D&D',
-    'app.currentGame': 'Поточна гра',
-    'app.active': 'Активна',
-    'app.notSelected': 'Не обрано',
-    'app.theme': 'Тема',
-    'app.language': 'Мова',
-    
-    // Tabs
-    'tabs.characters': 'Персонажі',
-    'tabs.dice': 'Кубики',
-    'tabs.combat': 'Бій',
-    'tabs.themes': 'Теми',
-    
-    // Games
-    'games.myGames': 'Мої Ігри',
-    'games.newGame': 'Нова гра',
-    'games.createNewGame': 'Створити нову гру',
-    'games.gameName': 'Назва гри',
-    'games.gameNamePlaceholder': 'Введіть назву гри',
-    'games.description': 'Опис',
-    'games.descriptionPlaceholder': 'Опишіть вашу гру',
-    'games.theme': 'Тема оформлення',
-    'games.mode': 'Режим гри',
-    'games.modeSimple': 'Спрощений',
-    'games.modeAdvanced': 'Звичайний',
-    'games.players': 'Гравці (через кому)',
-    'games.playersPlaceholder': 'Іван, Марія, Олексій',
-    'games.createGame': 'Створити гру',
-    'games.loadingGames': 'Завантаження ігор...',
-    'games.invitePlayer': 'Запросити гравця',
-    'games.manageInvitations': 'Керувати запрошеннями',
-    'games.gameMembers': 'Учасники гри',
-    
-    // Invitations
-    'invitations.title': 'Запрошення гравців',
-    'invitations.inviteEmail': 'Email для запрошення',
-    'invitations.emailPlaceholder': 'email@example.com',
-    'invitations.role': 'Роль',
-    'invitations.roleViewer': 'Глядач',
-    'invitations.roleEditor': 'Редактор',
-    'invitations.roleOwner': 'Власник',
-    'invitations.sendInvitation': 'Надіслати запрошення',
-    'invitations.copyLink': 'Копіювати посилання',
-    'invitations.linkCopied': 'Посилання скопійовано!',
-    'invitations.pendingInvitations': 'Очікують запрошення',
-    'invitations.noInvitations': 'Немає запрошень',
-    'invitations.expires': 'Закінчується',
-    'invitations.expired': 'Закінчився термін',
-    'invitations.used': 'Використано',
-    'invitations.delete': 'Видалити',
-    
-    // Members
-    'members.owner': 'Власник',
-    'members.editor': 'Редактор', 
-    'members.viewer': 'Глядач',
-    'members.you': '(Ви)',
-    'members.removeFromGame': 'Видалити з гри',
-    'members.changeRole': 'Змінити роль',
-    
-    // Themes
-    'themes.fantasy': 'Фентезі',
-    'themes.cyberpunk': 'Кіберпанк',
-    'themes.classic': 'Класичний',
-    'themes.stalker': 'Сталкер',
-    'themes.minimalist': 'Мінімалізм',
-    'themes.retro': 'Ретро',
-    'themes.space': 'Космос',
-    'themes.western': 'Вестерн',
-    'themes.apocalypse': 'Постапокаліпсис',
-    
-    // Common
+    // Загальне
     'common.loading': 'Завантаження...',
     'common.save': 'Зберегти',
     'common.cancel': 'Скасувати',
     'common.delete': 'Видалити',
     'common.edit': 'Редагувати',
     'common.close': 'Закрити',
+    'common.confirm': 'Підтвердити',
+    'common.back': 'Назад',
+    'common.next': 'Далі',
     'common.yes': 'Так',
     'common.no': 'Ні',
-    'common.confirm': 'Підтвердити',
-    
-    // Errors
-    'error.title': 'Помилка',
-    'error.loginFailed': 'Не вдалося увійти в систему',
-    'error.registerFailed': 'Не вдалося зареєструватися',
-    'error.passwordsDontMatch': 'Паролі не співпадають',
-    'error.fillAllFields': 'Заповніть всі поля',
-    'error.gameCreateFailed': 'Не вдалося створити гру',
-    'error.gameUpdateFailed': 'Не вдалося оновити гру',
-    'error.gameDeleteFailed': 'Не вдалося видалити гру',
-    'error.invitationFailed': 'Не вдалося надіслати запрошення',
-    'error.invalidEmail': 'Невірний email',
-    
-    // Success
-    'success.title': 'Успіх',
-    'success.loginSuccess': 'Успішний вхід в систему',
-    'success.registerSuccess': 'Успішна реєстрація',
+
+    // Аутентифікація
+    'auth.signIn': 'Увійти',
+    'auth.signUp': 'Зареєструватися',
+    'auth.signOut': 'Вийти',
+    'auth.email': 'Електронна пошта',
+    'auth.password': 'Пароль',
+    'auth.confirmPassword': 'Підтвердити пароль',
+    'auth.fullName': 'Повне ім\'я',
+    'auth.emailPlaceholder': 'Введіть вашу електронну пошту',
+    'auth.passwordPlaceholder': 'Введіть ваш пароль',
+    'auth.fullNamePlaceholder': 'Введіть ваше повне ім\'я',
+    'auth.alreadyHaveAccount': 'Вже маєте акаунт?',
+    'auth.dontHaveAccount': 'Немає акаунта?',
+    'auth.signInHere': 'Увійдіть тут',
+    'auth.signUpHere': 'Зареєструйтеся тут',
+    'auth.welcome': 'Ласкаво просимо',
+    'auth.createAccount': 'Створити акаунт',
+
+    // Додаток
+    'app.title': 'D&D Менеджер',
+    'app.subtitle': 'Ваш персональній помічник для керування іграми в Dungeons & Dragons',
+    'app.language': 'Мова',
+    'app.currentGame': 'Поточна гра',
+    'app.active': 'Активна',
+    'app.notSelected': 'Не вибрано',
+    'app.theme': 'Тема',
+
+    // Вкладки
+    'tabs.characters': 'Персонажі',
+    'tabs.dice': 'Кубики',
+    'tabs.combat': 'Бій',
+    'tabs.themes': 'Теми',
+
+    // Ігри
+    'games.myGames': 'Мої ігри',
+    'games.newGame': 'Нова гра',
+    'games.createNewGame': 'Створити нову гру',
+    'games.createGame': 'Створити гру',
+    'games.gameName': 'Назва гри',
+    'games.gameNamePlaceholder': 'Введіть назву гри',
+    'games.description': 'Опис',
+    'games.descriptionPlaceholder': 'Опишіть вашу гру',
+    'games.theme': 'Тема',
+    'games.mode': 'Режим',
+    'games.modeSimple': 'Простий',
+    'games.modeAdvanced': 'Розширений',
+    'games.loadingGames': 'Завантаження ігор...',
+    'games.noGames': 'У вас ще немає ігор',
+    'games.gameMembers': 'Учасники гри',
+    'games.invitePlayer': 'Запросити гравця',
+    'games.manageInvitations': 'Керувати запрошеннями',
+    'games.noMembers': 'Ще немає учасників',
+
+    // Учасники
+    'members.owner': 'Власник',
+    'members.editor': 'Редактор',
+    'members.viewer': 'Глядач',
+    'members.you': '(ви)',
+
+    // Запрошення
+    'invitations.title': 'Запросити у гру',
+    'invitations.inviteEmail': 'Електронна пошта',
+    'invitations.emailPlaceholder': 'example@email.com',
+    'invitations.role': 'Роль',
+    'invitations.roleOwner': 'Власник',
+    'invitations.roleEditor': 'Редактор',
+    'invitations.roleViewer': 'Глядач',
+    'invitations.sendInvitation': 'Надіслати запрошення',
+    'invitations.pendingInvitations': 'Очікуючі запрошення',
+    'invitations.expires': 'Закінчується',
+    'invitations.expired': 'Прострочено',
+    'invitations.linkCopied': 'Посилання скопійовано!',
+
+    // Теми
+    'themes.fantasy': 'Фентезі',
+    'themes.cyberpunk': 'Кіберпанк',
+    'themes.classic': 'Класична',
+    'themes.stalker': 'Сталкер',
+    'themes.minimalist': 'Мінімалістична',
+    'themes.retro': 'Ретро',
+    'themes.space': 'Космос',
+    'themes.western': 'Вестерн',
+    'themes.apocalypse': 'Апокаліпсис',
+
+    // Повідомлення про успіх
+    'success.title': 'Успішно!',
     'success.gameCreated': 'Гру створено успішно',
     'success.gameUpdated': 'Гру оновлено успішно',
     'success.gameDeleted': 'Гру видалено успішно',
     'success.invitationSent': 'Запрошення надіслано',
-    'success.memberRemoved': 'Учасника видалено з гри',
+    'success.invitationDeleted': 'Запрошення видалено',
+    'success.memberRemoved': 'Учасника видалено',
     'success.roleUpdated': 'Роль оновлено',
+
+    // Повідомлення про помилки
+    'error.title': 'Помилка',
+    'error.gameCreateFailed': 'Не вдалося створити гру',
+    'error.gameUpdateFailed': 'Не вдалося оновити гру',
+    'error.gameDeleteFailed': 'Не вдалося видалити гру',
+    'error.invitationFailed': 'Не вдалося надіслати запрошення',
   },
   en: {
+    // Common
+    'common.loading': 'Loading...',
+    'common.save': 'Save',
+    'common.cancel': 'Cancel',
+    'common.delete': 'Delete',
+    'common.edit': 'Edit',
+    'common.close': 'Close',
+    'common.confirm': 'Confirm',
+    'common.back': 'Back',
+    'common.next': 'Next',
+    'common.yes': 'Yes',
+    'common.no': 'No',
+
     // Authentication
-    'auth.welcome': 'Welcome',
-    'auth.login': 'Login',
-    'auth.register': 'Register',
+    'auth.signIn': 'Sign In',
+    'auth.signUp': 'Sign Up',
+    'auth.signOut': 'Sign Out',
     'auth.email': 'Email',
     'auth.password': 'Password',
     'auth.confirmPassword': 'Confirm Password',
-    'auth.loginButton': 'Sign In',
-    'auth.registerButton': 'Sign Up',
-    'auth.logout': 'Logout',
-    'auth.username': 'Username',
     'auth.fullName': 'Full Name',
-    
-    // Main app
-    'app.title': 'DnD Character Manager',
-    'app.subtitle': 'Create characters, roll dice, and manage your D&D adventures',
+    'auth.emailPlaceholder': 'Enter your email',
+    'auth.passwordPlaceholder': 'Enter your password',
+    'auth.fullNamePlaceholder': 'Enter your full name',
+    'auth.alreadyHaveAccount': 'Already have an account?',
+    'auth.dontHaveAccount': "Don't have an account?",
+    'auth.signInHere': 'Sign in here',
+    'auth.signUpHere': 'Sign up here',
+    'auth.welcome': 'Welcome',
+    'auth.createAccount': 'Create Account',
+
+    // App
+    'app.title': 'D&D Manager',
+    'app.subtitle': 'Your personal assistant for managing Dungeons & Dragons games',
+    'app.language': 'Language',
     'app.currentGame': 'Current Game',
     'app.active': 'Active',
     'app.notSelected': 'Not Selected',
     'app.theme': 'Theme',
-    'app.language': 'Language',
-    
+
     // Tabs
     'tabs.characters': 'Characters',
     'tabs.dice': 'Dice',
     'tabs.combat': 'Combat',
     'tabs.themes': 'Themes',
-    
+
     // Games
     'games.myGames': 'My Games',
     'games.newGame': 'New Game',
     'games.createNewGame': 'Create New Game',
+    'games.createGame': 'Create Game',
     'games.gameName': 'Game Name',
     'games.gameNamePlaceholder': 'Enter game name',
     'games.description': 'Description',
     'games.descriptionPlaceholder': 'Describe your game',
     'games.theme': 'Theme',
-    'games.mode': 'Game Mode',
+    'games.mode': 'Mode',
     'games.modeSimple': 'Simple',
     'games.modeAdvanced': 'Advanced',
-    'games.players': 'Players (comma separated)',
-    'games.playersPlaceholder': 'John, Mary, Alex',
-    'games.createGame': 'Create Game',
     'games.loadingGames': 'Loading games...',
+    'games.noGames': "You don't have any games yet",
+    'games.gameMembers': 'Game Members',
     'games.invitePlayer': 'Invite Player',
     'games.manageInvitations': 'Manage Invitations',
-    'games.gameMembers': 'Game Members',
-    
-    // Invitations
-    'invitations.title': 'Player Invitations',
-    'invitations.inviteEmail': 'Email to invite',
-    'invitations.emailPlaceholder': 'email@example.com',
-    'invitations.role': 'Role',
-    'invitations.roleViewer': 'Viewer',
-    'invitations.roleEditor': 'Editor',
-    'invitations.roleOwner': 'Owner',
-    'invitations.sendInvitation': 'Send Invitation',
-    'invitations.copyLink': 'Copy Link',
-    'invitations.linkCopied': 'Link copied!',
-    'invitations.pendingInvitations': 'Pending Invitations',
-    'invitations.noInvitations': 'No invitations',
-    'invitations.expires': 'Expires',
-    'invitations.expired': 'Expired',
-    'invitations.used': 'Used',
-    'invitations.delete': 'Delete',
-    
+    'games.noMembers': 'No members yet',
+
     // Members
     'members.owner': 'Owner',
     'members.editor': 'Editor',
     'members.viewer': 'Viewer',
-    'members.you': '(You)',
-    'members.removeFromGame': 'Remove from game',
-    'members.changeRole': 'Change role',
-    
+    'members.you': '(you)',
+
+    // Invitations
+    'invitations.title': 'Invite to Game',
+    'invitations.inviteEmail': 'Email',
+    'invitations.emailPlaceholder': 'example@email.com',
+    'invitations.role': 'Role',
+    'invitations.roleOwner': 'Owner',
+    'invitations.roleEditor': 'Editor',
+    'invitations.roleViewer': 'Viewer',
+    'invitations.sendInvitation': 'Send Invitation',
+    'invitations.pendingInvitations': 'Pending Invitations',
+    'invitations.expires': 'Expires',
+    'invitations.expired': 'Expired',
+    'invitations.linkCopied': 'Link copied!',
+
     // Themes
     'themes.fantasy': 'Fantasy',
     'themes.cyberpunk': 'Cyberpunk',
@@ -214,67 +221,52 @@ const translations = {
     'themes.retro': 'Retro',
     'themes.space': 'Space',
     'themes.western': 'Western',
-    'themes.apocalypse': 'Post-Apocalypse',
-    
-    // Common
-    'common.loading': 'Loading...',
-    'common.save': 'Save',
-    'common.cancel': 'Cancel',
-    'common.delete': 'Delete',
-    'common.edit': 'Edit',
-    'common.close': 'Close',
-    'common.yes': 'Yes',
-    'common.no': 'No',
-    'common.confirm': 'Confirm',
-    
-    // Errors
-    'error.title': 'Error',
-    'error.loginFailed': 'Failed to sign in',
-    'error.registerFailed': 'Failed to sign up',
-    'error.passwordsDontMatch': 'Passwords do not match',
-    'error.fillAllFields': 'Please fill all fields',
-    'error.gameCreateFailed': 'Failed to create game',
-    'error.gameUpdateFailed': 'Failed to update game',
-    'error.gameDeleteFailed': 'Failed to delete game',
-    'error.invitationFailed': 'Failed to send invitation',
-    'error.invalidEmail': 'Invalid email',
-    
-    // Success
-    'success.title': 'Success',
-    'success.loginSuccess': 'Successfully signed in',
-    'success.registerSuccess': 'Successfully registered',
+    'themes.apocalypse': 'Apocalypse',
+
+    // Success messages
+    'success.title': 'Success!',
     'success.gameCreated': 'Game created successfully',
     'success.gameUpdated': 'Game updated successfully',
     'success.gameDeleted': 'Game deleted successfully',
     'success.invitationSent': 'Invitation sent',
-    'success.memberRemoved': 'Member removed from game',
+    'success.invitationDeleted': 'Invitation deleted',
+    'success.memberRemoved': 'Member removed',
     'success.roleUpdated': 'Role updated',
+
+    // Error messages
+    'error.title': 'Error',
+    'error.gameCreateFailed': 'Failed to create game',
+    'error.gameUpdateFailed': 'Failed to update game',
+    'error.gameDeleteFailed': 'Failed to delete game',
+    'error.invitationFailed': 'Failed to send invitation',
   },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('uk');
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('language');
+    return (saved as Language) || 'uk';
+  });
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('dnd_language') as Language;
-    if (savedLanguage && (savedLanguage === 'uk' || savedLanguage === 'en')) {
-      setLanguage(savedLanguage);
-    }
-  }, []);
-
-  const handleSetLanguage = (lang: Language) => {
-    setLanguage(lang);
-    localStorage.setItem('dnd_language', lang);
-  };
+    localStorage.setItem('language', language);
+  }, [language]);
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['uk']] || key;
+    const keys = key.split('.');
+    let value: any = translations[language];
+    
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    
+    return value || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

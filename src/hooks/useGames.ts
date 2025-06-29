@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -40,7 +39,7 @@ export const useGames = () => {
           .filter((item: any) => item.games)
           .map((item: any) => ({
             ...item.games,
-            mode: item.games.mode || 'simple' as 'simple' | 'advanced',
+            mode: (item.games.mode === 'advanced' ? 'advanced' : 'simple') as 'simple' | 'advanced',
           }));
         setGames(mappedGames);
         return;
@@ -57,7 +56,7 @@ export const useGames = () => {
 
       const mappedDirectGames = (directGames || []).map((game: any) => ({
         ...game,
-        mode: game.mode || 'simple' as 'simple' | 'advanced',
+        mode: (game.mode === 'advanced' ? 'advanced' : 'simple') as 'simple' | 'advanced',
       }));
 
       setGames(mappedDirectGames);
@@ -97,7 +96,7 @@ export const useGames = () => {
       
       const mappedGame: Game = {
         ...data,
-        mode: data.mode || 'simple' as 'simple' | 'advanced',
+        mode: (data.mode === 'advanced' ? 'advanced' : 'simple') as 'simple' | 'advanced',
       };
       
       setGames(prev => [mappedGame, ...prev]);
@@ -130,7 +129,7 @@ export const useGames = () => {
       
       const mappedGame: Game = {
         ...data,
-        mode: data.mode || 'simple' as 'simple' | 'advanced',
+        mode: (data.mode === 'advanced' ? 'advanced' : 'simple') as 'simple' | 'advanced',
       };
       
       setGames(prev => prev.map(game => game.id === gameId ? mappedGame : game));

@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Game {
   id: string;
   name: string;
   description: string;
   theme: string;
+  mode: 'simple' | 'advanced';
   players: string[];
   created_at: string;
   last_played: string;
@@ -17,6 +19,7 @@ export const useGames = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const fetchGames = async () => {
     try {
@@ -30,8 +33,8 @@ export const useGames = () => {
     } catch (error) {
       console.error('Error fetching games:', error);
       toast({
-        title: 'Помилка',
-        description: 'Не вдалося завантажити ігри',
+        title: t('error.title'),
+        description: t('error.gameCreateFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -39,7 +42,13 @@ export const useGames = () => {
     }
   };
 
-  const createGame = async (gameData: { name: string; description: string; theme: string; players: string[] }) => {
+  const createGame = async (gameData: { 
+    name: string; 
+    description: string; 
+    theme: string; 
+    mode: 'simple' | 'advanced';
+    players: string[] 
+  }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -57,16 +66,16 @@ export const useGames = () => {
       
       setGames(prev => [data, ...prev]);
       toast({
-        title: 'Успіх',
-        description: 'Гру створено успішно',
+        title: t('success.title'),
+        description: t('success.gameCreated'),
       });
       
       return data;
     } catch (error) {
       console.error('Error creating game:', error);
       toast({
-        title: 'Помилка',
-        description: 'Не вдалося створити гру',
+        title: t('error.title'),
+        description: t('error.gameCreateFailed'),
         variant: 'destructive',
       });
     }
@@ -84,11 +93,15 @@ export const useGames = () => {
       if (error) throw error;
       
       setGames(prev => prev.map(game => game.id === gameId ? data : game));
+      toast({
+        title: t('success.title'),
+        description: t('success.gameUpdated'),
+      });
     } catch (error) {
       console.error('Error updating game:', error);
       toast({
-        title: 'Помилка',
-        description: 'Не вдалося оновити гру',
+        title: t('error.title'),
+        description: t('error.gameUpdateFailed'),
         variant: 'destructive',
       });
     }
@@ -105,14 +118,14 @@ export const useGames = () => {
       
       setGames(prev => prev.filter(game => game.id !== gameId));
       toast({
-        title: 'Успіх',
-        description: 'Гру видалено успішно',
+        title: t('success.title'),
+        description: t('success.gameDeleted'),
       });
     } catch (error) {
       console.error('Error deleting game:', error);
       toast({
-        title: 'Помилка',
-        description: 'Не вдалося видалити гру',
+        title: t('error.title'),
+        description: t('error.gameDeleteFailed'),
         variant: 'destructive',
       });
     }

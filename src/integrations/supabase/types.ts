@@ -50,12 +50,89 @@ export type Database = {
           },
         ]
       }
+      game_invitations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          game_id: string
+          id: string
+          invited_by: string
+          invited_email: string
+          role: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          game_id: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          game_id?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_invitations_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_members: {
+        Row: {
+          game_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_members_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       games: {
         Row: {
           created_at: string
           description: string | null
           id: string
           last_played: string
+          mode: string
           name: string
           players: string[] | null
           theme: string
@@ -66,6 +143,7 @@ export type Database = {
           description?: string | null
           id?: string
           last_played?: string
+          mode?: string
           name: string
           players?: string[] | null
           theme?: string
@@ -76,6 +154,7 @@ export type Database = {
           description?: string | null
           id?: string
           last_played?: string
+          mode?: string
           name?: string
           players?: string[] | null
           theme?: string

@@ -23,13 +23,12 @@ export const useGames = () => {
 
   const fetchGames = async () => {
     try {
-      // Try to fetch games where user is a member first
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // First try to get games via game_members
+      // Try to fetch games where user is a member first
       const { data: memberGames, error: memberError } = await supabase
-        .from('game_members' as any)
+        .from('game_members')
         .select(`
           game_id,
           games:game_id (*)
@@ -38,7 +37,7 @@ export const useGames = () => {
 
       if (!memberError && memberGames && memberGames.length > 0) {
         const mappedGames = memberGames
-          .filter(item => item.games)
+          .filter((item: any) => item.games)
           .map((item: any) => ({
             ...item.games,
             mode: item.games.mode || 'simple' as 'simple' | 'advanced',
@@ -56,9 +55,9 @@ export const useGames = () => {
 
       if (directError) throw directError;
 
-      const mappedDirectGames = (directGames || []).map(game => ({
+      const mappedDirectGames = (directGames || []).map((game: any) => ({
         ...game,
-        mode: (game as any).mode || 'simple' as 'simple' | 'advanced',
+        mode: game.mode || 'simple' as 'simple' | 'advanced',
       }));
 
       setGames(mappedDirectGames);
@@ -96,7 +95,7 @@ export const useGames = () => {
 
       if (error) throw error;
       
-      const mappedGame = {
+      const mappedGame: Game = {
         ...data,
         mode: data.mode || 'simple' as 'simple' | 'advanced',
       };
@@ -129,7 +128,7 @@ export const useGames = () => {
 
       if (error) throw error;
       
-      const mappedGame = {
+      const mappedGame: Game = {
         ...data,
         mode: data.mode || 'simple' as 'simple' | 'advanced',
       };

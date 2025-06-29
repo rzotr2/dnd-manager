@@ -37,9 +37,8 @@ export const useGameMembers = (gameId: string | null) => {
     if (!gameId) return;
     
     try {
-      // Simple query without relations first, since profiles table may not exist
       const { data, error } = await supabase
-        .from('game_members' as any)
+        .from('game_members')
         .select('*')
         .eq('game_id', gameId);
 
@@ -49,7 +48,7 @@ export const useGameMembers = (gameId: string | null) => {
         return;
       }
       
-      setMembers(data || []);
+      setMembers((data as any[]) || []);
     } catch (error) {
       console.error('Error fetching members:', error);
       setMembers([]);
@@ -61,7 +60,7 @@ export const useGameMembers = (gameId: string | null) => {
     
     try {
       const { data, error } = await supabase
-        .from('game_invitations' as any)
+        .from('game_invitations')
         .select('*')
         .eq('game_id', gameId)
         .is('used_at', null);
@@ -72,7 +71,7 @@ export const useGameMembers = (gameId: string | null) => {
         return;
       }
       
-      setInvitations(data || []);
+      setInvitations((data as any[]) || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
       setInvitations([]);
@@ -87,7 +86,7 @@ export const useGameMembers = (gameId: string | null) => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('game_invitations' as any)
+        .from('game_invitations')
         .insert({
           game_id: gameId,
           invited_by: user.id,
@@ -99,7 +98,7 @@ export const useGameMembers = (gameId: string | null) => {
 
       if (error) throw error;
 
-      setInvitations(prev => [...prev, data]);
+      setInvitations(prev => [...prev, data as GameInvitation]);
       toast({
         title: t('success.title'),
         description: t('success.invitationSent'),
@@ -119,7 +118,7 @@ export const useGameMembers = (gameId: string | null) => {
   const deleteInvitation = async (invitationId: string) => {
     try {
       const { error } = await supabase
-        .from('game_invitations' as any)
+        .from('game_invitations')
         .delete()
         .eq('id', invitationId);
 
@@ -138,7 +137,7 @@ export const useGameMembers = (gameId: string | null) => {
   const removeMember = async (memberId: string) => {
     try {
       const { error } = await supabase
-        .from('game_members' as any)
+        .from('game_members')
         .delete()
         .eq('id', memberId);
 
@@ -157,7 +156,7 @@ export const useGameMembers = (gameId: string | null) => {
   const updateMemberRole = async (memberId: string, newRole: 'owner' | 'editor' | 'viewer') => {
     try {
       const { error } = await supabase
-        .from('game_members' as any)
+        .from('game_members')
         .update({ role: newRole })
         .eq('id', memberId);
 

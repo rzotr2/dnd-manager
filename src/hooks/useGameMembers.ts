@@ -37,37 +37,21 @@ export const useGameMembers = (gameId: string | null) => {
     if (!gameId) return;
     
     try {
-      // Using raw SQL query since the tables are not in TypeScript types yet
-      const { data, error } = await supabase.rpc('get_game_members', { 
-        p_game_id: gameId 
-      }).then(async (result) => {
-        if (result.error) {
-          // Fallback to direct query if RPC doesn't exist
-          const { data: membersData, error: membersError } = await supabase
-            .from('game_members' as any)
-            .select(`
-              *,
-              profiles (
-                username,
-                full_name
-              )
-            `)
-            .eq('game_id', gameId);
-          
-          return { data: membersData, error: membersError };
-        }
-        return result;
-      });
+      // Simple query without relations first, since profiles table may not exist
+      const { data, error } = await supabase
+        .from('game_members' as any)
+        .select('*')
+        .eq('game_id', gameId);
 
       if (error) {
         console.error('Error fetching members:', error);
+        setMembers([]);
         return;
       }
       
       setMembers(data || []);
     } catch (error) {
       console.error('Error fetching members:', error);
-      // Set empty array as fallback
       setMembers([]);
     }
   };
@@ -84,13 +68,13 @@ export const useGameMembers = (gameId: string | null) => {
 
       if (error) {
         console.error('Error fetching invitations:', error);
+        setInvitations([]);
         return;
       }
       
       setInvitations(data || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
-      // Set empty array as fallback
       setInvitations([]);
     }
   };

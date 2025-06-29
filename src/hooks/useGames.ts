@@ -23,42 +23,45 @@ export const useGames = () => {
 
   const fetchGames = async () => {
     try {
-      // Fetch games where user is a member
-      const { data: userGames, error: gamesError } = await supabase
-        .from('games')
+      // Try to fetch games where user is a member first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // First try to get games via game_members
+      const { data: memberGames, error: memberError } = await supabase
+        .from('game_members' as any)
         .select(`
-          *,
-          game_members!inner(*)
+          game_id,
+          games:game_id (*)
         `)
-        .eq('game_members.user_id', (await supabase.auth.getUser()).data.user?.id)
-        .order('last_played', { ascending: false }) as any;
+        .eq('user_id', user.id);
 
-      if (gamesError) {
-        // Fallback to user's own games if game_members table doesn't exist yet
-        const { data: fallbackGames, error: fallbackError } = await supabase
-          .from('games')
-          .select('*')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-          .order('last_played', { ascending: false });
-
-        if (fallbackError) throw fallbackError;
-        setGames(fallbackGames || []);
+      if (!memberError && memberGames && memberGames.length > 0) {
+        const mappedGames = memberGames
+          .filter(item => item.games)
+          .map((item: any) => ({
+            ...item.games,
+            mode: item.games.mode || 'simple' as 'simple' | 'advanced',
+          }));
+        setGames(mappedGames);
         return;
       }
 
-      // Map the data to remove the nested game_members
-      const mappedGames = userGames?.map((game: any) => ({
-        id: game.id,
-        name: game.name,
-        description: game.description,
-        theme: game.theme,
-        mode: game.mode || 'simple',
-        players: game.players || [],
-        created_at: game.created_at,
-        last_played: game.last_played,
-      })) || [];
+      // Fallback to direct games query
+      const { data: directGames, error: directError } = await supabase
+        .from('games')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('last_played', { ascending: false });
 
-      setGames(mappedGames);
+      if (directError) throw directError;
+
+      const mappedDirectGames = (directGames || []).map(game => ({
+        ...game,
+        mode: (game as any).mode || 'simple' as 'simple' | 'advanced',
+      }));
+
+      setGames(mappedDirectGames);
     } catch (error) {
       console.error('Error fetching games:', error);
       toast({
@@ -93,13 +96,18 @@ export const useGames = () => {
 
       if (error) throw error;
       
-      setGames(prev => [data, ...prev]);
+      const mappedGame = {
+        ...data,
+        mode: data.mode || 'simple' as 'simple' | 'advanced',
+      };
+      
+      setGames(prev => [mappedGame, ...prev]);
       toast({
         title: t('success.title'),
         description: t('success.gameCreated'),
       });
       
-      return data;
+      return mappedGame;
     } catch (error) {
       console.error('Error creating game:', error);
       toast({
@@ -121,7 +129,12 @@ export const useGames = () => {
 
       if (error) throw error;
       
-      setGames(prev => prev.map(game => game.id === gameId ? data : game));
+      const mappedGame = {
+        ...data,
+        mode: data.mode || 'simple' as 'simple' | 'advanced',
+      };
+      
+      setGames(prev => prev.map(game => game.id === gameId ? mappedGame : game));
       toast({
         title: t('success.title'),
         description: t('success.gameUpdated'),

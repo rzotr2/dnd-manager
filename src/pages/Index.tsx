@@ -26,10 +26,10 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex items-center justify-center p-6">
-        <div className="text-center space-y-4">
-          <Shield className="w-12 h-12 text-primary mx-auto animate-spin" />
-          <p className="text-lg font-medium">{t('common.loading')}</p>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <Shield className="w-10 h-10 text-primary mx-auto animate-spin" />
+          <p className="text-base font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -37,7 +37,7 @@ const Index = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <AuthForm />
         </div>
@@ -47,19 +47,19 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/10">
-        <Sidebar className="border-r border-border w-80">
-          <SidebarHeader className="p-6 space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="w-6 h-6 text-primary" />
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/5">
+        <Sidebar className="border-r border-border/20 w-80">
+          <SidebarHeader className="p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-5 h-5 text-primary" />
               <span className="font-bold text-lg">DnD Manager</span>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <AuthForm />
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('app.language')}</label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-9">
                     <Globe className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -71,7 +71,7 @@ const Index = () => {
               </div>
             </div>
           </SidebarHeader>
-          <SidebarContent className="p-6">
+          <SidebarContent className="p-4">
             <GameManager 
               currentGame={currentGame}
               onGameChange={setCurrentGame}
@@ -81,57 +81,57 @@ const Index = () => {
         </Sidebar>
 
         <div className="flex-1 overflow-auto">
-          <div className="max-w-7xl mx-auto p-6 space-y-6">
+          <div className="max-w-7xl mx-auto p-4 space-y-4">
             {/* Header */}
-            <Card className="glass-effect border-2 border-primary/20">
-              <CardHeader className="text-center py-6">
-                <div className="flex items-center justify-between mb-4">
+            <Card className="glass-effect border border-border/20">
+              <CardHeader className="text-center py-4">
+                <div className="flex items-center justify-between mb-3">
                   <SidebarTrigger />
                   <div className="flex-1" />
                 </div>
-                <CardTitle className="flex items-center justify-center gap-4 text-2xl md:text-3xl font-bold mb-3">
-                  <Shield className="w-8 h-8 text-primary" />
+                <CardTitle className="flex items-center justify-center gap-3 text-xl md:text-2xl font-bold mb-2">
+                  <Shield className="w-6 h-6 text-primary" />
                   <span className="theme-gradient bg-clip-text text-transparent">
                     {t('app.title')}
                   </span>
-                  <Scroll className="w-8 h-8 text-primary" />
+                  <Scroll className="w-6 h-6 text-primary" />
                 </CardTitle>
-                <p className="text-muted-foreground text-base max-w-2xl mx-auto">
+                <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
                   {t('app.subtitle')}
                 </p>
               </CardHeader>
             </Card>
 
             {/* Main Content */}
-            <Tabs defaultValue="characters" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-2 bg-card/80 backdrop-blur gap-1">
-                <TabsTrigger value="characters" className="flex items-center gap-2 py-3 px-4">
+            <Tabs defaultValue="characters" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-10 p-1 bg-card/60 backdrop-blur gap-1">
+                <TabsTrigger value="characters" className="flex items-center gap-2 py-2 px-3 text-xs md:text-sm">
                   <Users className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('tabs.characters')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="dice" className="flex items-center gap-2 py-3 px-4">
+                <TabsTrigger value="dice" className="flex items-center gap-2 py-2 px-3 text-xs md:text-sm">
                   <Dices className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('tabs.dice')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="combat" className="flex items-center gap-2 py-3 px-4">
+                <TabsTrigger value="combat" className="flex items-center gap-2 py-2 px-3 text-xs md:text-sm">
                   <Sword className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('tabs.combat')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="themes" className="flex items-center gap-2 py-3 px-4">
+                <TabsTrigger value="themes" className="flex items-center gap-2 py-2 px-3 text-xs md:text-sm">
                   <Palette className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('tabs.themes')}</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="characters" className="animate-fade-in">
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {currentGame ? (
                     <CharacterSheet currentGameId={currentGame} />
                   ) : (
-                    <Card>
-                      <CardContent className="p-8 text-center">
-                        <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-lg font-medium text-muted-foreground mb-2">
+                    <Card className="border border-border/20">
+                      <CardContent className="p-6 text-center">
+                        <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-base font-medium text-muted-foreground mb-1">
                           {t('characters.noGameSelected')}
                         </p>
                         <p className="text-sm text-muted-foreground">
@@ -144,19 +144,19 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="dice" className="animate-fade-in">
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <DiceRoller />
                 </div>
               </TabsContent>
 
               <TabsContent value="combat" className="animate-fade-in">
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <CombatSystem />
                 </div>
               </TabsContent>
 
               <TabsContent value="themes" className="animate-fade-in">
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <ThemeSelector 
                     currentTheme={currentTheme}
                     onThemeChange={setCurrentTheme}
@@ -166,9 +166,9 @@ const Index = () => {
             </Tabs>
 
             {/* Footer */}
-            <Card className="glass-effect">
-              <CardContent className="p-4 text-center">
-                <p className="text-xs text-muted-foreground flex items-center justify-center gap-4 flex-wrap">
+            <Card className="glass-effect border border-border/20">
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground flex items-center justify-center gap-3 flex-wrap">
                   <span className="flex items-center gap-1">
                     🎲 {t('app.currentGame')}: {currentGame ? t('app.active') : t('app.notSelected')}
                   </span>

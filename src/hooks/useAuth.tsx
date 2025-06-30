@@ -34,44 +34,6 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, username: string, fullName: string) => {
-    try {
-      setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            username,
-            full_name: fullName,
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: t('success.title'),
-        description: t('success.registerSuccess'),
-      });
-
-      return { data, error: null };
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      toast({
-        title: t('error.title'),
-        description: error.message || t('error.registerFailed'),
-        variant: 'destructive',
-      });
-      return { data: null, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
@@ -106,6 +68,11 @@ export const useAuth = () => {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+
+      toast({
+        title: t('success.title'),
+        description: 'Ви успішно вийшли з системи',
+      });
     } catch (error: any) {
       console.error('Sign out error:', error);
       toast({
@@ -122,7 +89,6 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    signUp,
     signIn,
     signOut,
     isAuthenticated: !!user,

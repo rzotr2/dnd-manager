@@ -71,7 +71,7 @@ export const useAuth = () => {
 
       toast({
         title: t('success.title'),
-        description: 'Ви успішно вийшли з системи',
+        description: t('success.loginSuccess'),
       });
     } catch (error: any) {
       console.error('Sign out error:', error);

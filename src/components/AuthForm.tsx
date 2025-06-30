@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Lock, UserPlus, LogIn, Mail, Globe, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,18 +63,13 @@ const AuthForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/send-verification-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+        body: {
           email: registerData.email,
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to send code');
+      if (error) throw error;
 
       setPendingEmail(registerData.email);
       setVerificationStep('verify');
@@ -84,6 +78,7 @@ const AuthForm: React.FC = () => {
         description: t('success.codeSent'),
       });
     } catch (error) {
+      console.error('Error sending code:', error);
       toast({
         title: t('error.title'),
         description: t('error.codeSendFailed'),
@@ -105,22 +100,17 @@ const AuthForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/verify-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('verify-code', {
+        body: {
           email: pendingEmail,
           code: verificationCode,
           password: registerData.password,
           username: registerData.username,
           fullName: registerData.fullName,
-        }),
+        },
       });
 
-      if (!response.ok) throw new Error('Verification failed');
+      if (error) throw error;
 
       toast({
         title: t('success.title'),
@@ -139,6 +129,7 @@ const AuthForm: React.FC = () => {
         fullName: '' 
       });
     } catch (error) {
+      console.error('Error verifying code:', error);
       toast({
         title: t('error.title'),
         description: t('error.codeVerifyFailed'),

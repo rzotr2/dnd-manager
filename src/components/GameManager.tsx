@@ -82,6 +82,7 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
     }
   };
 
+  // Кнопка доступна тільки якщо є вибрана гра і є ігри взагалі
   const canManageInvitations = currentGame && games.length > 0;
 
   if (loading) {
@@ -107,6 +108,7 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
                 variant="outline" 
                 className="gap-2"
                 disabled={!canManageInvitations}
+                title={!canManageInvitations ? t('games.selectGameFirst') : ''}
               >
                 <Settings className="w-4 h-4" />
                 {t('games.manageInvitations')}

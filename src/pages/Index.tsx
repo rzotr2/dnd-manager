@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sword, Dices, Users, Palette, Shield, Scroll, Globe, User } from 'lucide-react';
+import { Sword, Dices, Users, Palette, Shield, Scroll, User } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import ThemeSelector from '@/components/ThemeSelector';
@@ -63,9 +62,29 @@ const Index = () => {
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/5">
         <Sidebar className="border-r border-border/20 w-48">
           <SidebarHeader className="p-2 space-y-2">
-            <div className="flex items-center gap-1 mb-1">
-              <Shield className="w-3 h-3 text-primary" />
-              <span className="font-bold text-sm">DnD Manager</span>
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <div className="flex items-center gap-1">
+                <Shield className="w-3 h-3 text-primary" />
+                <span className="font-bold text-sm">DnD Manager</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={language} 
+                  onChange={(e) => setLanguage(e.target.value as 'uk' | 'en')}
+                  className="text-xs bg-transparent border border-border/50 rounded px-2 py-1"
+                >
+                  <option value="uk">🇺🇦</option>
+                  <option value="en">🇺🇸</option>
+                </select>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAccountManagement(true)}
+                  className="h-6 w-6 p-0"
+                >
+                  <User className="w-3 h-3" />
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <AuthForm />
@@ -87,35 +106,14 @@ const Index = () => {
               <CardHeader className="text-center py-2">
                 <div className="flex items-center justify-between mb-1">
                   <SidebarTrigger />
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-primary" />
-                      <span className="theme-gradient bg-clip-text text-transparent font-bold text-lg">
-                        {t('app.title')}
-                      </span>
-                      <Scroll className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Select value={language} onValueChange={setLanguage}>
-                        <SelectTrigger className="w-20 h-7 text-xs">
-                          <Globe className="w-3 h-3" />
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="uk">🇺🇦</SelectItem>
-                          <SelectItem value="en">🇺🇸</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowAccountManagement(true)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <User className="w-3 h-3" />
-                      </Button>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-primary" />
+                    <span className="theme-gradient bg-clip-text text-transparent font-bold text-lg">
+                      {t('app.title')}
+                    </span>
+                    <Scroll className="w-4 h-4 text-primary" />
                   </div>
+                  <div></div>
                 </div>
                 <p className="text-muted-foreground text-xs max-w-lg mx-auto">
                   {t('app.subtitle')}
@@ -126,21 +124,21 @@ const Index = () => {
             {/* Main Content */}
             <Tabs defaultValue="characters" className="space-y-3">
               <div className="px-4 md:px-0">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-12 md:h-8 p-1 bg-card/60 backdrop-blur gap-1">
-                  <TabsTrigger value="characters" className="flex items-center gap-1 py-3 md:py-1 px-3 md:px-2 text-sm md:text-xs">
-                    <Users className="w-4 h-4 md:w-3 md:h-3" />
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-16 md:h-10 p-1 bg-card/60 backdrop-blur gap-1">
+                  <TabsTrigger value="characters" className="flex items-center gap-1 py-4 md:py-2 px-4 md:px-3 text-sm">
+                    <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">{t('tabs.characters')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="dice" className="flex items-center gap-1 py-3 md:py-1 px-3 md:px-2 text-sm md:text-xs">
-                    <Dices className="w-4 h-4 md:w-3 md:h-3" />
+                  <TabsTrigger value="dice" className="flex items-center gap-1 py-4 md:py-2 px-4 md:px-3 text-sm">
+                    <Dices className="w-4 h-4" />
                     <span className="hidden sm:inline">{t('tabs.dice')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="combat" className="flex items-center gap-1 py-3 md:py-1 px-3 md:px-2 text-sm md:text-xs">
-                    <Sword className="w-4 h-4 md:w-3 md:h-3" />
+                  <TabsTrigger value="combat" className="flex items-center gap-1 py-4 md:py-2 px-4 md:px-3 text-sm">
+                    <Sword className="w-4 h-4" />
                     <span className="hidden sm:inline">{t('tabs.combat')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="themes" className="flex items-center gap-1 py-3 md:py-1 px-3 md:px-2 text-sm md:text-xs">
-                    <Palette className="w-4 h-4 md:w-3 md:h-3" />
+                  <TabsTrigger value="themes" className="flex items-center gap-1 py-4 md:py-2 px-4 md:px-3 text-sm">
+                    <Palette className="w-4 h-4" />
                     <span className="hidden sm:inline">{t('tabs.themes')}</span>
                   </TabsTrigger>
                 </TabsList>

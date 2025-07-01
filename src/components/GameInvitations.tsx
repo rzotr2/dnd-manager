@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Users, Mail, Copy, Trash2, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Mail, Copy, Trash2, Clock, CheckCircle, XCircle, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
     role: 'viewer' as 'owner' | 'editor' | 'viewer'
   });
 
-  const handleSendInvitation = async () => {
+  const handleCreateInvitation = async () => {
     if (!inviteForm.email.trim()) return;
 
     await sendInvitation(inviteForm.email, inviteForm.role);
@@ -82,13 +82,13 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
             <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-2 shrink-0">
-                  <Mail className="w-4 h-4" />
-                  {t('games.invitePlayer')}
+                  <Link2 className="w-4 h-4" />
+                  {t('invitations.createInviteLink')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader className="space-y-3">
-                  <DialogTitle>{t('invitations.title')}</DialogTitle>
+                  <DialogTitle>{t('invitations.createInviteLink')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                   <div className="space-y-3">
@@ -124,8 +124,8 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button onClick={handleSendInvitation} className="w-full mt-6">
-                    {t('invitations.sendInvitation')}
+                  <Button onClick={handleCreateInvitation} className="w-full mt-6">
+                    {t('invitations.createLink')}
                   </Button>
                 </div>
               </DialogContent>
@@ -182,13 +182,13 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
         </CardContent>
       </Card>
 
-      {/* Pending Invitations */}
+      {/* Invitation Links */}
       {invitations.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="pb-4 space-y-2">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Mail className="w-5 h-5 text-primary" />
-              {t('invitations.pendingInvitations')}
+              <Link2 className="w-5 h-5 text-primary" />
+              {t('invitations.inviteLinks')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -196,7 +196,7 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
               <div key={invitation.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <Link2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm truncate">{invitation.invited_email}</div>
@@ -222,6 +222,7 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
                     size="sm"
                     onClick={() => copyInviteLink(invitation.token)}
                     className="h-8 w-8 p-0 hover:bg-muted"
+                    title={t('invitations.copyLink')}
                   >
                     <Copy className="w-4 h-4" />
                   </Button>
@@ -230,6 +231,7 @@ const GameInvitations: React.FC<GameInvitationsProps> = ({ gameId }) => {
                     size="sm"
                     onClick={() => deleteInvitation(invitation.id)}
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    title={t('invitations.deleteLink')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

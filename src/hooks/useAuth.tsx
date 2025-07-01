@@ -63,6 +63,42 @@ export const useAuth = () => {
     }
   };
 
+  const signUp = async (email: string, password: string, metadata?: { username?: string, full_name?: string }) => {
+    try {
+      setLoading(true);
+      // Use the current origin for redirect URL to avoid localhost issues
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: metadata || {}
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: t('success.title'),
+        description: t('success.registerSuccess'),
+      });
+
+      return { data, error: null };
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      toast({
+        title: t('error.title'),
+        description: error.message || t('error.registerFailed'),
+        variant: 'destructive',
+      });
+      return { data: null, error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       setLoading(true);
@@ -90,6 +126,7 @@ export const useAuth = () => {
     session,
     loading,
     signIn,
+    signUp,
     signOut,
     isAuthenticated: !!user,
   };

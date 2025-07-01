@@ -27,9 +27,9 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
-        <div className="text-center space-y-3">
-          <Shield className="w-10 h-10 text-primary mx-auto animate-spin" />
-          <p className="text-base font-medium">{t('common.loading')}</p>
+        <div className="text-center space-y-2">
+          <Shield className="w-8 h-8 text-primary mx-auto animate-spin" />
+          <p className="text-sm font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -38,7 +38,7 @@ const Index = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm">
           <AuthForm />
         </div>
       </div>
@@ -48,18 +48,18 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/5">
-        <Sidebar className="border-r border-border/20 w-64">
-          <SidebarHeader className="p-3 space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-primary" />
-              <span className="font-bold text-base">DnD Manager</span>
+        <Sidebar className="border-r border-border/20 w-48">
+          <SidebarHeader className="p-2 space-y-2">
+            <div className="flex items-center gap-1 mb-1">
+              <Shield className="w-3 h-3 text-primary" />
+              <span className="font-bold text-sm">DnD Manager</span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <AuthForm />
-              <div className="space-y-2">
-                <label className="text-xs font-medium">{t('app.language')}</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">{t('app.language')}</label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="w-full h-8 text-xs">
+                  <SelectTrigger className="w-full h-7 text-xs">
                     <Globe className="w-3 h-3 mr-1" />
                     <SelectValue />
                   </SelectTrigger>
@@ -71,7 +71,7 @@ const Index = () => {
               </div>
             </div>
           </SidebarHeader>
-          <SidebarContent className="p-3">
+          <SidebarContent className="p-2">
             <GameManager 
               currentGame={currentGame}
               onGameChange={setCurrentGame}
@@ -81,30 +81,30 @@ const Index = () => {
         </Sidebar>
 
         <div className="flex-1 overflow-auto min-w-0">
-          <div className="max-w-6xl mx-auto p-3 space-y-3">
+          <div className="max-w-5xl mx-auto p-2 space-y-2">
             {/* Header */}
             <Card className="glass-effect border border-border/20">
-              <CardHeader className="text-center py-3">
-                <div className="flex items-center justify-between mb-2">
+              <CardHeader className="text-center py-2">
+                <div className="flex items-center justify-between mb-1">
                   <SidebarTrigger />
                   <div className="flex-1" />
                 </div>
-                <CardTitle className="flex items-center justify-center gap-2 text-lg md:text-xl font-bold mb-1">
-                  <Shield className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center justify-center gap-2 text-lg font-bold mb-1">
+                  <Shield className="w-4 h-4 text-primary" />
                   <span className="theme-gradient bg-clip-text text-transparent">
                     {t('app.title')}
                   </span>
-                  <Scroll className="w-5 h-5 text-primary" />
+                  <Scroll className="w-4 h-4 text-primary" />
                 </CardTitle>
-                <p className="text-muted-foreground text-xs max-w-xl mx-auto">
+                <p className="text-muted-foreground text-xs max-w-lg mx-auto">
                   {t('app.subtitle')}
                 </p>
               </CardHeader>
             </Card>
 
             {/* Main Content */}
-            <Tabs defaultValue="characters" className="space-y-3">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-9 p-1 bg-card/60 backdrop-blur gap-1">
+            <Tabs defaultValue="characters" className="space-y-2">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-8 p-1 bg-card/60 backdrop-blur gap-1">
                 <TabsTrigger value="characters" className="flex items-center gap-1 py-1 px-2 text-xs">
                   <Users className="w-3 h-3" />
                   <span className="hidden sm:inline">{t('tabs.characters')}</span>
@@ -124,13 +124,13 @@ const Index = () => {
               </TabsList>
 
               <TabsContent value="characters" className="animate-fade-in">
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {currentGame ? (
                     <CharacterSheet currentGameId={currentGame} />
                   ) : (
                     <Card className="border border-border/20">
-                      <CardContent className="p-4 text-center">
-                        <Users className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                      <CardContent className="p-3 text-center">
+                        <Users className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
                         <p className="text-sm font-medium text-muted-foreground mb-1">
                           {t('characters.noGameSelected')}
                         </p>
@@ -144,19 +144,19 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="dice" className="animate-fade-in">
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <DiceRoller />
                 </div>
               </TabsContent>
 
               <TabsContent value="combat" className="animate-fade-in">
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <CombatSystem />
                 </div>
               </TabsContent>
 
               <TabsContent value="themes" className="animate-fade-in">
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <ThemeSelector 
                     currentTheme={currentTheme}
                     onThemeChange={setCurrentTheme}

@@ -1,19 +1,19 @@
 
 import React, { useState } from 'react';
-import { UserPlus, Mail } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface RegisterFormProps {
   loading: boolean;
-  onCodeSent: (email: string) => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ loading, onCodeSent }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ loading }) => {
+  const { signUp } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
   
@@ -25,7 +25,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading, onCodeSent }) => {
     fullName: '' 
   });
 
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!registerData.email || !registerData.password || !registerData.username || !registerData.fullName) {
@@ -46,32 +46,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading, onCodeSent }) => {
       return;
     }
 
-    try {
-      const { data, error } = await supabase.functions.invoke('send-verification-code', {
-        body: {
-          email: registerData.email,
-        },
-      });
-
-      if (error) throw error;
-
-      onCodeSent(registerData.email);
-      toast({
-        title: t('success.title'),
-        description: t('success.codeSent'),
-      });
-    } catch (error) {
-      console.error('Error sending code:', error);
-      toast({
-        title: t('error.title'),
-        description: t('error.codeSendFailed'),
-        variant: 'destructive',
-      });
-    }
+    await signUp(registerData.email, registerData.password, {
+      username: registerData.username,
+      full_name: registerData.fullName
+    });
   };
 
   return (
-    <form onSubmit={handleSendCode} className="space-y-4">
+    <form onSubmit={handleRegister} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="reg-email" className="text-sm">{t('auth.email')}</Label>
         <Input
@@ -138,8 +120,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading, onCodeSent }) => {
         />
       </div>
       <Button type="submit" className="w-full h-9" disabled={loading}>
-        <Mail className="w-4 h-4 mr-2" />
-        {t('auth.sendCode')}
+        <UserPlus className="w-4 h-4 mr-2" />
+        {t('auth.registerButton')}
       </Button>
     </form>
   );

@@ -50,36 +50,6 @@ export type Database = {
           },
         ]
       }
-      email_verification_codes: {
-        Row: {
-          attempts: number
-          code: string
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          used_at: string | null
-        }
-        Insert: {
-          attempts?: number
-          code: string
-          created_at?: string
-          email: string
-          expires_at?: string
-          id?: string
-          used_at?: string | null
-        }
-        Update: {
-          attempts?: number
-          code?: string
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          used_at?: string | null
-        }
-        Relationships: []
-      }
       game_invitations: {
         Row: {
           created_at: string
@@ -197,14 +167,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_expired_verification_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_verification_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

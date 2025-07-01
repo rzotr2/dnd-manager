@@ -21,14 +21,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading }) => {
     email: '', 
     password: '', 
     confirmPassword: '', 
-    username: '', 
-    fullName: '' 
+    username: ''
   });
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!registerData.email || !registerData.password || !registerData.username || !registerData.fullName) {
+    if (!registerData.email || !registerData.password || !registerData.username) {
       toast({
         title: t('error.title'),
         description: t('error.fillAllFields'),
@@ -47,8 +46,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading }) => {
     }
 
     await signUp(registerData.email, registerData.password, {
-      username: registerData.username,
-      full_name: registerData.fullName
+      username: registerData.username
     });
   };
 
@@ -75,19 +73,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ loading }) => {
           value={registerData.username}
           onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
           placeholder={t('auth.usernamePlaceholder')}
-          required
-          disabled={loading}
-          className="h-9"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="reg-fullname" className="text-sm">{t('auth.fullName')}</Label>
-        <Input
-          id="reg-fullname"
-          type="text"
-          value={registerData.fullName}
-          onChange={(e) => setRegisterData(prev => ({ ...prev, fullName: e.target.value }))}
-          placeholder={t('auth.fullNamePlaceholder')}
           required
           disabled={loading}
           className="h-9"

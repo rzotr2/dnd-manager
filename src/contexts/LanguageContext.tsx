@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useCallback } from 'react';
 
 interface LanguageContextProps {
@@ -37,11 +38,25 @@ const translations = {
       passwordPlaceholder: "Введіть пароль",
       username: "Ім'я користувача",
       usernamePlaceholder: "Введіть ім'я користувача",
-      fullName: "Повне ім'я",
-      fullNamePlaceholder: "Введіть повне ім'я",
       confirmPassword: "Підтвердіть пароль",
       registerButton: "Зареєструватися",
-      welcome: "Вітаємо"
+      welcome: "Вітаємо",
+      haveAccount: "Вже маєте акаунт?",
+      noAccount: "Немає акаунта?",
+      clickLogin: "Натисніть тут для входу",
+      clickRegister: "Натисніть тут для реєстрації"
+    },
+    account: {
+      title: "Керування Акаунтом",
+      changePassword: "Змінити Пароль",
+      deleteAccount: "Видалити Акаунт",
+      oldPassword: "Старий пароль",
+      newPassword: "Новий пароль",
+      confirmNewPassword: "Підтвердіть новий пароль",
+      updatePassword: "Оновити пароль",
+      back: "Назад",
+      confirmDelete: "Ви впевнені, що хочете видалити свій акаунт? Цю дію неможливо скасувати.",
+      deleteConfirm: "Так, видалити акаунт"
     },
     common: {
       loading: "Завантаження..."
@@ -107,7 +122,9 @@ const translations = {
       invitationSent: "Запрошення надіслано!",
       invitationDeleted: "Запрошення видалено!",
       memberRemoved: "Учасника видалено!",
-      roleUpdated: "Роль оновлено!"
+      roleUpdated: "Роль оновлено!",
+      passwordUpdated: "Пароль успішно оновлено!",
+      accountDeleted: "Акаунт успішно видалено!"
     },
     error: {
       title: "Помилка!",
@@ -116,7 +133,10 @@ const translations = {
       fillAllFields: "Будь ласка, заповніть всі поля.",
       passwordMismatch: "Паролі не співпадають.",
       invitationFailed: "Не вдалося надіслати запрошення.",
-      emailAlreadyExists: "Користувач з такою поштою вже існує."
+      emailAlreadyExists: "Користувач з такою поштою вже існує.",
+      passwordUpdateFailed: "Не вдалося оновити пароль.",
+      accountDeleteFailed: "Не вдалося видалити акаунт.",
+      wrongOldPassword: "Неправильний старий пароль."
     },
     invitations: {
       title: "Запросити в Гру",
@@ -159,11 +179,25 @@ const translations = {
       passwordPlaceholder: "Enter password",
       username: "Username",
       usernamePlaceholder: "Enter username",
-      fullName: "Full Name",
-      fullNamePlaceholder: "Enter full name",
       confirmPassword: "Confirm Password",
       registerButton: "Register",
-      welcome: "Welcome"
+      welcome: "Welcome",
+      haveAccount: "Already have an account?",
+      noAccount: "Don't have an account?",
+      clickLogin: "Click here to login",
+      clickRegister: "Click here to register"
+    },
+    account: {
+      title: "Account Management",
+      changePassword: "Change Password",
+      deleteAccount: "Delete Account",
+      oldPassword: "Old password",
+      newPassword: "New password",
+      confirmNewPassword: "Confirm new password",
+      updatePassword: "Update password",
+      back: "Back",
+      confirmDelete: "Are you sure you want to delete your account? This action cannot be undone.",
+      deleteConfirm: "Yes, delete account"
     },
     common: {
       loading: "Loading..."
@@ -229,7 +263,9 @@ const translations = {
       invitationSent: "Invitation sent!",
       invitationDeleted: "Invitation deleted!",
       memberRemoved: "Member removed!",
-      roleUpdated: "Role updated!"
+      roleUpdated: "Role updated!",
+      passwordUpdated: "Password updated successfully!",
+      accountDeleted: "Account deleted successfully!"
     },
     error: {
       title: "Error!",
@@ -238,7 +274,10 @@ const translations = {
       fillAllFields: "Please fill in all fields.",
       passwordMismatch: "Passwords do not match.",
       invitationFailed: "Failed to send invitation.",
-      emailAlreadyExists: "User with this email already exists."
+      emailAlreadyExists: "User with this email already exists.",
+      passwordUpdateFailed: "Failed to update password.",
+      accountDeleteFailed: "Failed to delete account.",
+      wrongOldPassword: "Wrong old password."
     },
     invitations: {
       title: "Invite to Game",

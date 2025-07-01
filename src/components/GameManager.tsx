@@ -82,6 +82,8 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
     }
   };
 
+  const canManageInvitations = currentGame && games.length > 0;
+
   if (loading) {
     return (
       <div className="text-center p-6">
@@ -98,22 +100,26 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{t('games.myGames')}</h3>
         <div className="flex gap-2">
-          {currentGame && (
-            <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Settings className="w-4 h-4" />
-                  {t('games.manageInvitations')}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{t('games.manageInvitations')}</DialogTitle>
-                </DialogHeader>
-                <GameInvitations gameId={currentGame} />
-              </DialogContent>
-            </Dialog>
-          )}
+          <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="gap-2"
+                disabled={!canManageInvitations}
+              >
+                <Settings className="w-4 h-4" />
+                {t('games.manageInvitations')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{t('games.manageInvitations')}</DialogTitle>
+              </DialogHeader>
+              {currentGame && <GameInvitations gameId={currentGame} />}
+            </DialogContent>
+          </Dialog>
+          
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">

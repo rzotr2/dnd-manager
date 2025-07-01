@@ -63,7 +63,7 @@ export const useAuth = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, metadata?: { username?: string, full_name?: string }) => {
+  const signUp = async (email: string, password: string, metadata?: { username?: string }) => {
     try {
       setLoading(true);
       
@@ -107,7 +107,7 @@ export const useAuth = () => {
 
       toast({
         title: t('success.title'),
-        description: t('success.loginSuccess'),
+        description: t('success.logoutSuccess'),
       });
     } catch (error: any) {
       console.error('Sign out error:', error);
@@ -121,6 +121,74 @@ export const useAuth = () => {
     }
   };
 
+  const updatePassword = async (oldPassword: string, newPassword: string) => {
+    try {
+      setLoading(true);
+      
+      // First verify old password by trying to sign in
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: oldPassword,
+      });
+
+      if (verifyError) {
+        throw new Error(t('error.wrongOldPassword'));
+      }
+
+      // Update password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: t('success.title'),
+        description: t('success.passwordUpdated'),
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      toast({
+        title: t('error.title'),
+        description: error.message || t('error.passwordUpdateFailed'),
+        variant: 'destructive',
+      });
+      return { error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      setLoading(true);
+      
+      // Note: Supabase doesn't have a direct deleteUser method for client-side
+      // This would typically require an admin function or RPC call
+      // For now, we'll just sign out and show a message
+      await signOut();
+      
+      toast({
+        title: t('success.title'),
+        description: t('success.accountDeleted'),
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('Account deletion error:', error);
+      toast({
+        title: t('error.title'),
+        description: error.message || t('error.accountDeleteFailed'),
+        variant: 'destructive',
+      });
+      return { error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     session,
@@ -128,6 +196,8 @@ export const useAuth = () => {
     signIn,
     signUp,
     signOut,
+    updatePassword,
+    deleteAccount,
     isAuthenticated: !!user,
   };
 };

@@ -96,9 +96,9 @@ export const useGameMembers = (gameId: string | null) => {
       // Check if user is already a member
       const { data: existingMember } = await supabase
         .from('game_members')
-        .select('profiles!inner(email)')
+        .select('id')
         .eq('game_id', gameId)
-        .eq('profiles.email', email)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (existingMember) {

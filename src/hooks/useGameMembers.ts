@@ -12,6 +12,7 @@ interface GameMember {
   profiles?: {
     username: string;
     full_name: string;
+    email: string;
   };
 }
 
@@ -39,7 +40,14 @@ export const useGameMembers = (gameId: string | null) => {
     try {
       const { data, error } = await supabase
         .from('game_members')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            full_name,
+            email
+          )
+        `)
         .eq('game_id', gameId);
 
       if (error) {
@@ -84,6 +92,41 @@ export const useGameMembers = (gameId: string | null) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
+        .from('game_members')
+        .select('profiles!inner(email)')
+        .eq('game_id', gameId)
+        .eq('profiles.email', email)
+        .maybeSingle();
+
+      if (existingMember) {
+        toast({
+          title: t('error.title'),
+          description: 'Користувач вже є учасником цієї гри',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check if invitation already exists
+      const { data: existingInvitation } = await supabase
+        .from('game_invitations')
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('invited_email', email)
+        .is('used_at', null)
+        .maybeSingle();
+
+      if (existingInvitation) {
+        toast({
+          title: t('error.title'),
+          description: 'Запрошення вже надіслано на цю пошту',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       const { data, error } = await supabase
         .from('game_invitations')

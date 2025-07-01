@@ -1,261 +1,287 @@
+import React, { createContext, useState, useContext, useCallback } from 'react';
 
-import React, { createContext, useContext, useState } from 'react';
-
-type Language = 'uk' | 'en';
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+interface LanguageContextProps {
+  language: string;
+  setLanguage: (lang: string) => void;
   t: (key: string) => string;
+}
+
+const LanguageContext = createContext<LanguageContextProps>({
+  language: 'en',
+  setLanguage: () => {},
+  t: (key: string) => key,
+});
+
+interface LanguageProviderProps {
+  children: React.ReactNode;
 }
 
 const translations = {
   uk: {
-    // App general
-    'app.title': 'DnD Менеджер',
-    'app.subtitle': 'Повний набір інструментів для майстрів гри та гравців D&D',
-    'app.language': 'Мова',
-    'app.theme': 'Тема',
-    'app.currentGame': 'Поточна гра',
-    'app.active': 'Активна',
-    'app.notSelected': 'Не обрано',
-    
-    // Common
-    'common.loading': 'Завантаження...',
-    'common.save': 'Зберегти',
-    'common.cancel': 'Скасувати',
-    'common.delete': 'Видалити',
-    'common.edit': 'Редагувати',
-    'common.create': 'Створити',
-    'common.roll': 'Кинути',
-    'common.reset': 'Скинути',
-    'common.close': 'Закрити',
-    'common.confirm': 'Підтвердити',
-    
-    // Authentication
-    'auth.login': 'Вхід',
-    'auth.register': 'Реєстрація',
-    'auth.logout': 'Вихід',
-    'auth.loginButton': 'Увійти',
-    'auth.registerButton': 'Зареєструватися',
-    'auth.email': 'Email',
-    'auth.password': 'Пароль',
-    'auth.confirmPassword': 'Підтвердіть пароль',
-    'auth.username': 'Ім\'я користувача',
-    'auth.fullName': 'Повне ім\'я',
-    'auth.emailPlaceholder': 'Введіть ваш email',
-    'auth.passwordPlaceholder': 'Введіть пароль',
-    'auth.usernamePlaceholder': 'Введіть ім\'я користувача',
-    'auth.fullNamePlaceholder': 'Введіть повне ім\'я',
-    'auth.welcome': 'Ласкаво просимо',
-    'auth.signInWith': 'Увійти через',
-    'auth.dontHaveAccount': 'Немає акаунту?',
-    'auth.haveAccount': 'Вже є акаунт?',
-    
-    // Tabs
-    'tabs.characters': 'Персонажі',
-    'tabs.dice': 'Кубики',
-    'tabs.combat': 'Бій',
-    'tabs.themes': 'Теми',
-    'tabs.games': 'Ігри',
-    
-    // Characters
-    'characters.title': 'Персонажі',
-    'characters.noGameSelected': 'Гру не обрано',
-    'characters.selectGame': 'Оберіть гру в лівому меню',
-    'characters.createNew': 'Створити персонажа',
-    'characters.name': 'Ім\'я',
-    'characters.class': 'Клас',
-    'characters.level': 'Рівень',
-    'characters.race': 'Раса',
-    
-    // Dice
-    'dice.title': 'Кубики',
-    'dice.rollResult': 'Результат кидка',
-    'dice.total': 'Всього',
-    'dice.modifier': 'Модифікатор',
-    'dice.addModifier': 'Додати модифікатор',
-    'dice.history': 'Історія кидків',
-    'dice.clearHistory': 'Очистити історію',
-    'dice.rollMultiple': 'Кинути декілька',
-    'dice.amount': 'Кількість',
-    
-    // Combat
-    'combat.title': 'Система бою',
-    'combat.initiative': 'Ініціатива',
-    'combat.addCombatant': 'Додати учасника',
-    'combat.startCombat': 'Почати бій',
-    'combat.endCombat': 'Закінчити бій',
-    'combat.nextTurn': 'Наступний хід',
-    'combat.hp': 'HP',
-    'combat.ac': 'AC',
-    'combat.name': 'Ім\'я',
-    'combat.rollInitiative': 'Кинути ініціативу',
-    'combat.damage': 'Шкода',
-    'combat.heal': 'Лікування',
-    
-    // Themes
-    'themes.title': 'Теми оформлення',
-    'themes.current': 'Поточна тема',
-    'themes.fantasy': 'Фентезі',
-    'themes.dark': 'Темна',
-    'themes.cyberpunk': 'Кіберпанк',
-    'themes.steampunk': 'Стімпанк',
-    'themes.horror': 'Жахи',
-    'themes.space': 'Космос',
-    'themes.preview': 'Попередній перегляд',
-    'themes.apply': 'Застосувати',
-    
-    // Games
-    'games.title': 'Ігри',
-    'games.create': 'Створити гру',
-    'games.join': 'Приєднатися',
-    'games.select': 'Обрати гру',
-    'games.noGames': 'Немає ігор',
-    'games.createFirst': 'Створіть свою першу гру',
-    
-    // Errors
-    'error.title': 'Помилка',
-    'error.fillAllFields': 'Заповніть всі поля',
-    'error.passwordMismatch': 'Паролі не співпадають',
-    'error.loginFailed': 'Помилка входу',
-    'error.registerFailed': 'Помилка реєстрації',
-    'error.generic': 'Сталася помилка',
-    
-    // Success
-    'success.title': 'Успіх',
-    'success.loginSuccess': 'Успішний вхід',
-    'success.registerSuccess': 'Успішна реєстрація',
-    'success.saved': 'Збережено',
+    app: {
+      title: "DnD Менеджер",
+      subtitle: "Керуйте своїми іграми DnD легко.",
+      currentGame: "Поточна гра",
+      active: "Активна",
+      notSelected: "Не вибрано",
+      theme: "Тема",
+      language: "Мова"
+    },
+    auth: {
+      login: "Увійти",
+      register: "Зареєструватися",
+      logout: "Вийти",
+      email: "Електронна пошта",
+      emailPlaceholder: "your@email.com",
+      password: "Пароль",
+      passwordPlaceholder: "Введіть пароль",
+      username: "Ім'я користувача",
+      usernamePlaceholder: "Введіть ім'я користувача",
+      fullName: "Повне ім'я",
+      fullNamePlaceholder: "Введіть повне ім'я",
+      confirmPassword: "Підтвердіть пароль",
+      registerButton: "Зареєструватися",
+      welcome: "Вітаємо"
+    },
+    common: {
+      loading: "Завантаження..."
+    },
+    tabs: {
+      characters: "Персонажі",
+      dice: "Кубики",
+      combat: "Бій",
+      themes: "Теми"
+    },
+    characters: {
+      noGameSelected: "Гра не вибрана",
+      selectGame: "Будь ласка, виберіть гру, щоб переглянути персонажів."
+    },
+    dice: {
+      roll: "Кинути",
+      reset: "Скинути",
+      addDice: "Додати кубик",
+      removeDice: "Видалити кубик"
+    },
+    combat: {
+      initiative: "Ініціатива",
+      health: "Здоров'я",
+      armorClass: "Клас броні",
+      attack: "Атака",
+      damage: "Урон"
+    },
+    themes: {
+      fantasy: "Фентезі",
+      cyberpunk: "Кіберпанк",
+      classic: "Класика",
+      stalker: "Сталкер",
+      minimalist: "Мінімалізм",
+      retro: "Ретро",
+      space: "Космос",
+      western: "Вестерн",
+      apocalypse: "Апокаліпсис"
+    },
+    games: {
+      myGames: "Мої Ігри",
+      newGame: "Нова Гра",
+      createNewGame: "Створити Нову Гру",
+      createGame: "Створити Гру",
+      gameName: "Назва Гри",
+      gameNamePlaceholder: "Введіть назву гри...",
+      description: "Опис",
+      descriptionPlaceholder: "Опис гри (необов'язково)...",
+      mode: "Режим",
+      modeSimple: "Простий",
+      modeAdvanced: "Розширений",
+      theme: "Тема",
+      loadingGames: "Завантаження ігор...",
+      gameMembers: "Учасники Гри",
+      noMembers: "Учасників поки немає",
+      invitePlayer: "Запросити Гравця",
+      manageInvitations: "Керувати Запрошеннями"
+    },
+    success: {
+      title: "Успіх!",
+      loginSuccess: "Ви успішно увійшли!",
+      registerSuccess: "Ви успішно зареєструвалися!",
+      logoutSuccess: "Ви успішно вийшли!",
+      invitationSent: "Запрошення надіслано!",
+      invitationDeleted: "Запрошення видалено!",
+      memberRemoved: "Учасника видалено!",
+      roleUpdated: "Роль оновлено!"
+    },
+    error: {
+      title: "Помилка!",
+      loginFailed: "Не вдалося увійти. Перевірте свої облікові дані.",
+      registerFailed: "Не вдалося зареєструватися. Будь ласка, спробуйте ще раз.",
+      fillAllFields: "Будь ласка, заповніть всі поля.",
+      passwordMismatch: "Паролі не співпадають.",
+      invitationFailed: "Не вдалося надіслати запрошення.",
+      emailAlreadyExists: "Користувач з такою поштою вже існує."
+    },
+    invitations: {
+      title: "Запросити в Гру",
+      inviteEmail: "Email для запрошення",
+      emailPlaceholder: "example@email.com",
+      role: "Роль",
+      roleViewer: "Глядач",
+      roleEditor: "Редактор", 
+      roleOwner: "Власник",
+      sendInvitation: "Надіслати Запрошення",
+      pendingInvitations: "Очікувані Запрошення",
+      expires: "Закінчується",
+      expired: "Прострочено",
+      linkCopied: "Посилання скопійовано!"
+    },
+    members: {
+      owner: "Власник",
+      editor: "Редактор",
+      viewer: "Глядач",
+      you: "Ви"
+    }
   },
   en: {
-    // App general
-    'app.title': 'DnD Manager',
-    'app.subtitle': 'Complete toolkit for D&D dungeon masters and players',
-    'app.language': 'Language',
-    'app.theme': 'Theme',
-    'app.currentGame': 'Current game',
-    'app.active': 'Active',
-    'app.notSelected': 'Not selected',
-    
-    // Common
-    'common.loading': 'Loading...',
-    'common.save': 'Save',
-    'common.cancel': 'Cancel',
-    'common.delete': 'Delete',
-    'common.edit': 'Edit',
-    'common.create': 'Create',
-    'common.roll': 'Roll',
-    'common.reset': 'Reset',
-    'common.close': 'Close',
-    'common.confirm': 'Confirm',
-    
-    // Authentication
-    'auth.login': 'Login',
-    'auth.register': 'Register',
-    'auth.logout': 'Logout',
-    'auth.loginButton': 'Sign In',
-    'auth.registerButton': 'Sign Up',
-    'auth.email': 'Email',
-    'auth.password': 'Password',
-    'auth.confirmPassword': 'Confirm Password',
-    'auth.username': 'Username',
-    'auth.fullName': 'Full Name',
-    'auth.emailPlaceholder': 'Enter your email',
-    'auth.passwordPlaceholder': 'Enter password',
-    'auth.usernamePlaceholder': 'Enter username',
-    'auth.fullNamePlaceholder': 'Enter full name',
-    'auth.welcome': 'Welcome',
-    'auth.signInWith': 'Sign in with',
-    'auth.dontHaveAccount': 'Don\'t have an account?',
-    'auth.haveAccount': 'Already have an account?',
-    
-    // Tabs
-    'tabs.characters': 'Characters',
-    'tabs.dice': 'Dice',
-    'tabs.combat': 'Combat',
-    'tabs.themes': 'Themes',
-    'tabs.games': 'Games',
-    
-    // Characters
-    'characters.title': 'Characters',
-    'characters.noGameSelected': 'No game selected',
-    'characters.selectGame': 'Select a game from the left menu',
-    'characters.createNew': 'Create Character',
-    'characters.name': 'Name',
-    'characters.class': 'Class',
-    'characters.level': 'Level',
-    'characters.race': 'Race',
-    
-    // Dice
-    'dice.title': 'Dice Roller',
-    'dice.rollResult': 'Roll Result',
-    'dice.total': 'Total',
-    'dice.modifier': 'Modifier',
-    'dice.addModifier': 'Add Modifier',
-    'dice.history': 'Roll History',
-    'dice.clearHistory': 'Clear History',
-    'dice.rollMultiple': 'Roll Multiple',
-    'dice.amount': 'Amount',
-    
-    // Combat
-    'combat.title': 'Combat System',
-    'combat.initiative': 'Initiative',
-    'combat.addCombatant': 'Add Combatant',
-    'combat.startCombat': 'Start Combat',
-    'combat.endCombat': 'End Combat',
-    'combat.nextTurn': 'Next Turn',
-    'combat.hp': 'HP',
-    'combat.ac': 'AC',
-    'combat.name': 'Name',
-    'combat.rollInitiative': 'Roll Initiative',
-    'combat.damage': 'Damage',
-    'combat.heal': 'Heal',
-    
-    // Themes
-    'themes.title': 'Theme Selector',
-    'themes.current': 'Current Theme',
-    'themes.fantasy': 'Fantasy',
-    'themes.dark': 'Dark',
-    'themes.cyberpunk': 'Cyberpunk',
-    'themes.steampunk': 'Steampunk',
-    'themes.horror': 'Horror',
-    'themes.space': 'Space',
-    'themes.preview': 'Preview',
-    'themes.apply': 'Apply',
-    
-    // Games
-    'games.title': 'Games',
-    'games.create': 'Create Game',
-    'games.join': 'Join Game',
-    'games.select': 'Select Game',
-    'games.noGames': 'No games',
-    'games.createFirst': 'Create your first game',
-    
-    // Errors
-    'error.title': 'Error',
-    'error.fillAllFields': 'Please fill all fields',
-    'error.passwordMismatch': 'Passwords do not match',
-    'error.loginFailed': 'Login failed',
-    'error.registerFailed': 'Registration failed',
-    'error.generic': 'An error occurred',
-    
-    // Success
-    'success.title': 'Success',
-    'success.loginSuccess': 'Successfully logged in',
-    'success.registerSuccess': 'Successfully registered',
-    'success.saved': 'Saved',
+    app: {
+      title: "DnD Manager",
+      subtitle: "Manage your DnD games easily.",
+      currentGame: "Current Game",
+      active: "Active",
+      notSelected: "Not Selected",
+      theme: "Theme",
+      language: "Language"
+    },
+    auth: {
+      login: "Login",
+      register: "Register",
+      logout: "Logout",
+      email: "Email",
+      emailPlaceholder: "your@email.com",
+      password: "Password",
+      passwordPlaceholder: "Enter password",
+      username: "Username",
+      usernamePlaceholder: "Enter username",
+      fullName: "Full Name",
+      fullNamePlaceholder: "Enter full name",
+      confirmPassword: "Confirm Password",
+      registerButton: "Register",
+      welcome: "Welcome"
+    },
+    common: {
+      loading: "Loading..."
+    },
+    tabs: {
+      characters: "Characters",
+      dice: "Dice",
+      combat: "Combat",
+      themes: "Themes"
+    },
+    characters: {
+      noGameSelected: "No Game Selected",
+      selectGame: "Please select a game to view characters."
+    },
+    dice: {
+      roll: "Roll",
+      reset: "Reset",
+      addDice: "Add Dice",
+      removeDice: "Remove Dice"
+    },
+    combat: {
+      initiative: "Initiative",
+      health: "Health",
+      armorClass: "Armor Class",
+      attack: "Attack",
+      damage: "Damage"
+    },
+    themes: {
+      fantasy: "Fantasy",
+      cyberpunk: "Cyberpunk",
+      classic: "Classic",
+      stalker: "Stalker",
+      minimalist: "Minimalist",
+      retro: "Retro",
+      space: "Space",
+      western: "Western",
+      apocalypse: "Apocalypse"
+    },
+    games: {
+      myGames: "My Games",
+      newGame: "New Game",
+      createNewGame: "Create New Game", 
+      createGame: "Create Game",
+      gameName: "Game Name",
+      gameNamePlaceholder: "Enter game name...",
+      description: "Description",
+      descriptionPlaceholder: "Game description (optional)...",
+      mode: "Mode",
+      modeSimple: "Simple",
+      modeAdvanced: "Advanced",
+      theme: "Theme",
+      loadingGames: "Loading games...",
+      gameMembers: "Game Members",
+      noMembers: "No members yet",
+      invitePlayer: "Invite Player",
+      manageInvitations: "Manage Invitations"
+    },
+    success: {
+      title: "Success!",
+      loginSuccess: "Logged in successfully!",
+      registerSuccess: "Registered successfully!",
+      logoutSuccess: "Logged out successfully!",
+      invitationSent: "Invitation sent!",
+      invitationDeleted: "Invitation deleted!",
+      memberRemoved: "Member removed!",
+      roleUpdated: "Role updated!"
+    },
+    error: {
+      title: "Error!",
+      loginFailed: "Login failed. Check your credentials.",
+      registerFailed: "Registration failed. Please try again.",
+      fillAllFields: "Please fill in all fields.",
+      passwordMismatch: "Passwords do not match.",
+      invitationFailed: "Failed to send invitation.",
+      emailAlreadyExists: "User with this email already exists."
+    },
+    invitations: {
+      title: "Invite to Game",
+      inviteEmail: "Email to invite",
+      emailPlaceholder: "example@email.com",
+      role: "Role",
+      roleViewer: "Viewer",
+      roleEditor: "Editor",
+      roleOwner: "Owner", 
+      sendInvitation: "Send Invitation",
+      pendingInvitations: "Pending Invitations",
+      expires: "Expires",
+      expired: "Expired",
+      linkCopied: "Link copied!"
+    },
+    members: {
+      owner: "Owner",
+      editor: "Editor", 
+      viewer: "Viewer",
+      you: "You"
+    }
   }
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState(localStorage.getItem('language') || 'uk');
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('uk');
+  React.useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
-  };
+  const t = useCallback((key: string) => {
+    const keys = key.split('.');
+    let value: any = translations[language as keyof typeof translations];
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k as keyof typeof value];
+      } else {
+        return key;
+      }
+    }
+    return typeof value === 'string' ? value : key;
+  }, [language]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
@@ -264,10 +290,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
+const useLanguage = () => {
+  return useContext(LanguageContext);
 };
+
+export { LanguageProvider, useLanguage };

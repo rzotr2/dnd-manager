@@ -104,21 +104,21 @@ const Index = () => {
 
             {/* Main Content */}
             <Tabs defaultValue="characters" className="space-y-2">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-8 p-1 bg-card/60 backdrop-blur gap-1">
-                <TabsTrigger value="characters" className="flex items-center gap-1 py-1 px-2 text-xs">
-                  <Users className="w-3 h-3" />
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-10 md:h-8 p-1 bg-card/60 backdrop-blur gap-1 mx-2 md:mx-0">
+                <TabsTrigger value="characters" className="flex items-center gap-1 py-2 md:py-1 px-3 md:px-2 text-sm md:text-xs">
+                  <Users className="w-4 h-4 md:w-3 md:h-3" />
                   <span className="hidden sm:inline">{t('tabs.characters')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="dice" className="flex items-center gap-1 py-1 px-2 text-xs">
-                  <Dices className="w-3 h-3" />
+                <TabsTrigger value="dice" className="flex items-center gap-1 py-2 md:py-1 px-3 md:px-2 text-sm md:text-xs">
+                  <Dices className="w-4 h-4 md:w-3 md:h-3" />
                   <span className="hidden sm:inline">{t('tabs.dice')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="combat" className="flex items-center gap-1 py-1 px-2 text-xs">
-                  <Sword className="w-3 h-3" />
+                <TabsTrigger value="combat" className="flex items-center gap-1 py-2 md:py-1 px-3 md:px-2 text-sm md:text-xs">
+                  <Sword className="w-4 h-4 md:w-3 md:h-3" />
                   <span className="hidden sm:inline">{t('tabs.combat')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="themes" className="flex items-center gap-1 py-1 px-2 text-xs">
-                  <Palette className="w-3 h-3" />
+                <TabsTrigger value="themes" className="flex items-center gap-1 py-2 md:py-1 px-3 md:px-2 text-sm md:text-xs">
+                  <Palette className="w-4 h-4 md:w-3 md:h-3" />
                   <span className="hidden sm:inline">{t('tabs.themes')}</span>
                 </TabsTrigger>
               </TabsList>

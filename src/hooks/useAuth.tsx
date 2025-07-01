@@ -67,17 +67,6 @@ export const useAuth = () => {
     try {
       setLoading(true);
       
-      // Check if user already exists
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', email)
-        .maybeSingle();
-        
-      if (existingUser) {
-        throw new Error(t('error.emailAlreadyExists'));
-      }
-      
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({

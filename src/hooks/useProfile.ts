@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -91,7 +90,16 @@ export const useProfile = () => {
         return;
       }
 
-      setInvitations(data as GameInvitation[]);
+      // Transform the data to match our interface
+      const transformedData = data?.map(invitation => ({
+        ...invitation,
+        inviter_profile: invitation.inviter_profile ? {
+          username: invitation.inviter_profile.username,
+          email: invitation.inviter_profile.email,
+        } : null,
+      })) as GameInvitation[];
+
+      setInvitations(transformedData || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
     } finally {

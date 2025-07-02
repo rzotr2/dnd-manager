@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Upload, Camera, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -99,7 +98,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   };
 
   const handleGenerateCharacter = () => {
-    const generated = generateBlankCharacter();
+    const generated = generateBlankCharacter('Сталкер', theme);
     const themeFields = getFieldsForTheme(theme);
     
     // Заповнюємо базову інформацію

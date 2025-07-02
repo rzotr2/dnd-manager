@@ -1,4 +1,3 @@
-
 export interface GameMode {
   id: 'simple' | 'standard';
   name: string;
@@ -214,98 +213,78 @@ const getNamesByTheme = (theme: string) => {
   }
 };
 
-export const generateRandomCharacter = (mode: 'simple' | 'standard', gameId: string, theme: string = 'theme-fantasy') => {
+export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: boolean = false) => {
+  const mode: 'simple' | 'standard' = 'simple'; // Default to simple mode
   const fields = getFieldsByTheme(theme, mode);
   const names = getNamesByTheme(theme);
   const name = names[Math.floor(Math.random() * names.length)];
   
-  const generatedFields = fields.map((field, index) => ({
-    id: `${field.category}_${index}`,
-    name: field.name,
-    value: (Math.floor(Math.random() * (field.max - field.min + 1)) + field.min).toString(),
-    type: 'number' as const,
-    category: field.category as 'stats' | 'skills',
-  }));
+  if (empty) {
+    // Return empty character with just field structure
+    const emptyFields: Record<string, any> = {};
+    fields.forEach((field, index) => {
+      emptyFields[field.name] = '';
+    });
+    
+    // Add description fields
+    emptyFields['Візуальний опис'] = '';
+    emptyFields['Особлива прикмета'] = '';
+    emptyFields['Минуле та характер'] = '';
+    emptyFields['Звички та захоплення'] = '';
+    
+    return {
+      name: '',
+      fields: emptyFields
+    };
+  }
+  
+  const generatedFields: Record<string, any> = {};
+  
+  // Generate random values for each field
+  fields.forEach((field) => {
+    generatedFields[field.name] = (Math.floor(Math.random() * (field.max - field.min + 1)) + field.min).toString();
+  });
 
-  // Додати бонусні здібності (тепер textarea)
+  // Add bonus abilities
   const abilities = ABILITIES_BY_THEME[theme] || ABILITIES_BY_THEME['theme-fantasy'];
   const bonusAbilities = abilities
     .sort(() => 0.5 - Math.random())
-    .slice(0, Math.floor(Math.random() * 3) + 1)
-    .map((ability, index) => ({
-      id: `ability_${index}`,
-      name: ability,
-      value: 'Опис здібності тут...',
-      type: 'textarea' as const,
-      category: 'abilities' as const,
-      isBonus: true,
-    }));
+    .slice(0, Math.floor(Math.random() * 3) + 1);
+    
+  bonusAbilities.forEach((ability, index) => {
+    generatedFields[`${ability}`] = 'Опис здібності тут...';
+  });
 
-  // Додати спорядження
+  // Add equipment
   const equipment = EQUIPMENT_BY_THEME[theme] || EQUIPMENT_BY_THEME['theme-fantasy'];
   const selectedEquipment = equipment
     .sort(() => 0.5 - Math.random())
-    .slice(0, Math.floor(Math.random() * 4) + 2)
-    .map((item, index) => ({
-      id: `equipment_${index}`,
-      name: item,
-      value: '1',
-      type: 'text' as const,
-      category: 'equipment' as const,
-    }));
+    .slice(0, Math.floor(Math.random() * 4) + 2);
+    
+  selectedEquipment.forEach((item, index) => {
+    generatedFields[`Спорядження: ${item}`] = '1';
+  });
 
-  // Додати додаткові поля опису (textarea)
-  const descriptionFields = [
-    { id: 'visual_description', name: 'Візуальний опис', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'special_feature', name: 'Особлива прикмета', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'background', name: 'Минуле та характер', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'habits', name: 'Звички та захоплення', value: '', type: 'textarea' as const, category: 'other' as const },
-  ];
+  // Add description fields
+  generatedFields['Візуальний опис'] = '';
+  generatedFields['Особлива прикмета'] = '';
+  generatedFields['Минуле та характер'] = '';
+  generatedFields['Звички та захоплення'] = '';
 
   return {
-    game_id: gameId,
     name,
-    theme,
-    fields: [...generatedFields, ...bonusAbilities, ...selectedEquipment, ...descriptionFields],
+    fields: generatedFields
   };
 };
 
+// Keep the old function for backward compatibility but mark as deprecated
 export const generateBlankCharacter = (gameId: string, theme: string = 'theme-fantasy', mode: 'simple' | 'standard' = 'simple') => {
-  const fields = getFieldsByTheme(theme, mode);
-  
-  const blankFields = fields.map((field, index) => ({
-    id: `${field.category}_${index}`,
-    name: field.name,
-    value: '',
-    type: 'number' as const,
-    category: field.category as 'stats' | 'skills',
-  }));
-
-  // Додати порожні поля здібностей (textarea)
-  const abilityFields = [
-    { id: 'ability_1', name: 'Здібність 1', value: '', type: 'textarea' as const, category: 'abilities' as const },
-    { id: 'ability_2', name: 'Здібність 2', value: '', type: 'textarea' as const, category: 'abilities' as const },
-  ];
-
-  // Додати порожні поля спорядження
-  const equipmentFields = [
-    { id: 'equipment_1', name: 'Зброя', value: '', type: 'text' as const, category: 'equipment' as const },
-    { id: 'equipment_2', name: 'Броня', value: '', type: 'text' as const, category: 'equipment' as const },
-    { id: 'equipment_3', name: 'Інше спорядження', value: '', type: 'text' as const, category: 'equipment' as const },
-  ];
-
-  // Додати поля опису (textarea)
-  const descriptionFields = [
-    { id: 'visual_description', name: 'Візуальний опис', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'special_feature', name: 'Особлива прикмета', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'background', name: 'Минуле та характер', value: '', type: 'textarea' as const, category: 'other' as const },
-    { id: 'habits', name: 'Звички та захоплення', value: '', type: 'textarea' as const, category: 'other' as const },
-  ];
-
+  console.warn('generateBlankCharacter is deprecated, use generateRandomCharacter with empty=true');
+  const result = generateRandomCharacter(theme, true);
   return {
     game_id: gameId,
-    name: 'Новий персонаж',
+    name: result.name,
     theme,
-    fields: [...blankFields, ...abilityFields, ...equipmentFields, ...descriptionFields],
+    fields: result.fields,
   };
 };

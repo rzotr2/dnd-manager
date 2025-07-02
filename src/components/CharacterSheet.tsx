@@ -36,7 +36,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
   // Оновити форму при зміні типу персонажа
   useEffect(() => {
     if (characterType === 'random') {
-      const randomChar = generateRandomCharacter(selectedTheme);
+      const randomChar = generateRandomCharacter(selectedTheme, false);
       setNewCharacterData({
         name: randomChar.name,
         photo: '',

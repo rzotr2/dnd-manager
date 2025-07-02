@@ -1,3 +1,5 @@
+import { CharacterField, CharacterFieldsData, GeneratedCharacter } from '@/types/character';
+
 export interface GameMode {
   id: 'simple' | 'standard';
   name: string;
@@ -213,7 +215,19 @@ const getNamesByTheme = (theme: string) => {
   }
 };
 
-export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: boolean = false) => {
+// New function that returns properly structured CharacterField array
+export const getCharacterFieldsTemplate = (theme: string = 'theme-fantasy', mode: 'simple' | 'standard' = 'simple'): CharacterField[] => {
+  const fields = getFieldsByTheme(theme, mode);
+  
+  return fields.map(field => ({
+    name: field.name,
+    value: '',
+    type: field.category === 'stats' ? 'number' as const : 'text' as const,
+    category: field.category as 'basic' | 'stats' | 'skills' | 'equipment' | 'notes'
+  }));
+};
+
+export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: boolean = false): GeneratedCharacter => {
   const mode: 'simple' | 'standard' = 'simple'; // Default to simple mode
   const fields = getFieldsByTheme(theme, mode);
   const names = getNamesByTheme(theme);
@@ -221,8 +235,8 @@ export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: 
   
   if (empty) {
     // Return empty character with just field structure
-    const emptyFields: Record<string, any> = {};
-    fields.forEach((field, index) => {
+    const emptyFields: CharacterFieldsData = {};
+    fields.forEach((field) => {
       emptyFields[field.name] = '';
     });
     
@@ -238,7 +252,7 @@ export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: 
     };
   }
   
-  const generatedFields: Record<string, any> = {};
+  const generatedFields: CharacterFieldsData = {};
   
   // Generate random values for each field
   fields.forEach((field) => {
@@ -251,7 +265,7 @@ export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: 
     .sort(() => 0.5 - Math.random())
     .slice(0, Math.floor(Math.random() * 3) + 1);
     
-  bonusAbilities.forEach((ability, index) => {
+  bonusAbilities.forEach((ability) => {
     generatedFields[`${ability}`] = 'Опис здібності тут...';
   });
 
@@ -261,7 +275,7 @@ export const generateRandomCharacter = (theme: string = 'theme-fantasy', empty: 
     .sort(() => 0.5 - Math.random())
     .slice(0, Math.floor(Math.random() * 4) + 2);
     
-  selectedEquipment.forEach((item, index) => {
+  selectedEquipment.forEach((item) => {
     generatedFields[`Спорядження: ${item}`] = '1';
   });
 

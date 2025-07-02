@@ -10,14 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import DiceRoller from '@/components/DiceRoller';
 import CombatSystem from '@/components/CombatSystem';
-import { generateBlankCharacter } from '@/utils/characterGenerator';
-
-interface CharacterField {
-  name: string;
-  value: string | number;
-  type: 'text' | 'number' | 'textarea';
-  category: 'basic' | 'stats' | 'skills' | 'equipment' | 'notes';
-}
+import { generateRandomCharacter, getCharacterFieldsTemplate } from '@/utils/characterGenerator';
+import { CharacterField, CharacterFieldsData } from '@/types/character';
 
 interface CharacterSheetProps {
   gameId: string;
@@ -29,7 +23,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [fieldValues, setFieldValues] = useState<CharacterFieldsData>({});
   const [characterName, setCharacterName] = useState('');
   const [characterPhoto, setCharacterPhoto] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -40,7 +34,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
 
   useEffect(() => {
     if (currentCharacter && currentCharacter.fields) {
-      setFieldValues(currentCharacter.fields);
+      // Safely convert Json to CharacterFieldsData
+      const safeFields: CharacterFieldsData = 
+        (currentCharacter.fields && typeof currentCharacter.fields === 'object' && !Array.isArray(currentCharacter.fields))
+          ? (currentCharacter.fields as CharacterFieldsData)
+          : {};
+      
+      setFieldValues(safeFields);
       setCharacterName(currentCharacter.name);
       setCharacterPhoto(currentCharacter.photo || '');
     }
@@ -57,7 +57,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     }
 
     try {
-      const blankCharacter = generateBlankCharacter(theme);
+      const blankCharacter = generateRandomCharacter(theme, true);
       const newCharacter = await createCharacter({
         game_id: gameId,
         name: characterName,
@@ -220,19 +220,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   const getAllFields = (): CharacterField[] => {
     if (!currentCharacter) return [];
 
-    const blankCharacter = generateBlankCharacter(theme);
-    const baseFields = blankCharacter.fields || [];
+    // Get the template fields for this theme
+    const templateFields = getCharacterFieldsTemplate(theme);
     
-    // Safely handle character fields - ensure it's definitely a Record<string, any>
+    // Safely convert character fields to CharacterFieldsData
     const characterFields = currentCharacter.fields;
-    const safeCharacterFields: Record<string, any> = 
+    const safeCharacterFields: CharacterFieldsData = 
       (characterFields && typeof characterFields === 'object' && !Array.isArray(characterFields)) 
-        ? (characterFields as Record<string, any>)
+        ? (characterFields as CharacterFieldsData)
         : {};
     
-    // Get custom fields from the character's stored fields
+    // Get custom fields from the character's stored fields that aren't in the template
+    const templateFieldNames = new Set(templateFields.map(field => field.name));
     const customFields = Object.entries(safeCharacterFields)
-      .filter(([key]) => !baseFields.some(field => field.name === key))
+      .filter(([key]) => !templateFieldNames.has(key))
       .map(([key, value]) => ({
         name: key,
         value: value,
@@ -240,7 +241,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
         category: 'notes' as const,
       }));
 
-    return [...baseFields, ...customFields];
+    return [...templateFields, ...customFields];
   };
 
   const getFieldsByCategory = (category: string): CharacterField[] => {

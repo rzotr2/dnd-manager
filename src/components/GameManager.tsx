@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, Settings, Calendar, Trash2, Share2 } from 'lucide-react';
+import { Plus, Users, Settings, Calendar, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { useGames } from '@/hooks/useGames';
 import { useLanguage } from '@/contexts/LanguageContext';
-import GameInvitations from './GameInvitations';
 
 const THEMES = [
   { id: 'theme-fantasy', name: 'Фентезі', description: 'Класичне фентезі з магією та драконами' },
@@ -39,7 +38,6 @@ const GameManager: React.FC<GameManagerProps> = ({
   const { games, loading, createGame, updateGame, deleteGame } = useGames();
   const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [newGameData, setNewGameData] = useState({
     name: '',
     description: '',
@@ -74,7 +72,7 @@ const GameManager: React.FC<GameManagerProps> = ({
       description: newGameData.description,
       theme: newGameData.theme,
       mode: newGameData.mode,
-      players: [], // Порожній масив, оскільки імена не використовуються
+      players: [], // Порожній масив
     };
 
     const createdGame = await createGame(gameData);
@@ -186,7 +184,7 @@ const GameManager: React.FC<GameManagerProps> = ({
               {t('games.create')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="space-y-8">
+          <DialogContent className="space-y-8 max-w-lg">
             <DialogHeader>
               <DialogTitle>{t('games.create')}</DialogTitle>
             </DialogHeader>
@@ -198,6 +196,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                   value={newGameData.name}
                   onChange={(e) => setNewGameData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Назва гри"
+                  className="w-full"
                 />
               </div>
 
@@ -208,7 +207,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                   value={newGameData.description}
                   onChange={(e) => setNewGameData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Опис гри (необов'язково)"
-                  className="min-h-[80px]"
+                  className="min-h-[80px] w-full"
                 />
               </div>
 
@@ -218,7 +217,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                   value={newGameData.theme} 
                   onValueChange={(value) => setNewGameData(prev => ({ ...prev, theme: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -240,7 +239,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                   value={newGameData.mode} 
                   onValueChange={(value: 'simple' | 'advanced') => setNewGameData(prev => ({ ...prev, mode: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -260,26 +259,6 @@ const GameManager: React.FC<GameManagerProps> = ({
                 {t('common.create')}
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="w-full justify-start text-xs h-8"
-              disabled={!currentGame}
-            >
-              <Share2 className="w-3 h-3 mr-2" />
-              {t('invitations.manage')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{t('invitations.manage')}</DialogTitle>
-            </DialogHeader>
-            {currentGame && <GameInvitations gameId={currentGame} />}
           </DialogContent>
         </Dialog>
       </div>

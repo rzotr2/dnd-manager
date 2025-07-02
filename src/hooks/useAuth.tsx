@@ -78,8 +78,15 @@ export const useAuth = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if user already exists
+        if (error.message.includes('already') || error.message.includes('exists')) {
+          throw new Error(t('error.userExists'));
+        }
+        throw error;
+      }
 
+      // Always show success message for registration
       toast({
         title: t('success.title'),
         description: t('success.registerSuccess'),

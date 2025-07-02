@@ -44,17 +44,25 @@ const translations = {
     'characters.selectGame': 'Спочатку виберіть гру в бічному меню',
     
     // Auth
+    'auth.welcome': 'Вітаємо',
     'auth.login': 'Увійти',
     'auth.register': 'Зареєструватися',
+    'auth.logout': 'Вийти',
     'auth.email': 'Електронна пошта',
     'auth.password': 'Пароль',
+    'auth.username': 'Ім\'я користувача',
     'auth.confirmPassword': 'Підтвердіть пароль',
     'auth.alreadyHaveAccount': 'Вже маєте акаунт?',
     'auth.noAccount': 'Немає акаунта?',
     'auth.signIn': 'Увійти',
     'auth.signUp': 'Зареєструватися',
+    'auth.loginButton': 'Увійти',
+    'auth.registerButton': 'Зареєструватися',
     'auth.forgotPassword': 'Забули пароль?',
     'auth.resetPassword': 'Скинути пароль',
+    'auth.emailPlaceholder': 'Введіть електронну пошту',
+    'auth.passwordPlaceholder': 'Введіть пароль',
+    'auth.usernamePlaceholder': 'Введіть ім\'я користувача',
     
     // Games
     'games.create': 'Створити гру',
@@ -63,19 +71,24 @@ const translations = {
     'games.noGames': 'У вас ще немає ігор',
     'games.createFirst': 'Створіть свою першу гру',
     
-    // Invitations
-    'invitations.manage': 'Керувати запрошеннями',
-    'invitations.create': 'Створити запрошення',
-    'invitations.link': 'Посилання для запрошення',
-    'invitations.copy': 'Копіювати посилання',
-    'invitations.copied': 'Посилання скопійовано!',
-    'invitations.expire': 'Термін дії',
-    'invitations.role': 'Роль',
-    'invitations.viewer': 'Глядач',
-    'invitations.player': 'Гравець',
-    'invitations.gm': 'Ведучий',
-    'invitations.noInvitations': 'Немає активних запрошень',
-    'invitations.selectGame': 'Спочатку виберіть гру',
+    // Success messages
+    'success.title': 'Успішно',
+    'success.loginSuccess': 'Успішний вхід в систему',
+    'success.registerSuccess': 'Реєстрацію завершено! Перевірте свою електронну пошту та перейдіть за посиланням для підтвердження акаунту.',
+    'success.logoutSuccess': 'Успішний вихід з системи',
+    'success.passwordUpdated': 'Пароль успішно оновлено',
+    'success.accountDeleted': 'Акаунт успішно видалено',
+    
+    // Error messages
+    'error.title': 'Помилка',
+    'error.fillAllFields': 'Будь ласка, заповніть всі поля',
+    'error.passwordMismatch': 'Паролі не співпадають',
+    'error.loginFailed': 'Помилка входу в систему',
+    'error.registerFailed': 'Помилка реєстрації',
+    'error.wrongOldPassword': 'Неправильний старий пароль',
+    'error.passwordUpdateFailed': 'Помилка оновлення пароля',
+    'error.accountDeleteFailed': 'Помилка видалення акаунту',
+    'error.userExists': 'Користувач з таким email та/або іменем користувача вже існує',
   },
   en: {
     // App
@@ -111,17 +124,25 @@ const translations = {
     'characters.selectGame': 'Please select a game from the sidebar first',
     
     // Auth
+    'auth.welcome': 'Welcome',
     'auth.login': 'Login',
     'auth.register': 'Register',
+    'auth.logout': 'Logout',
     'auth.email': 'Email',
     'auth.password': 'Password',
+    'auth.username': 'Username',
     'auth.confirmPassword': 'Confirm password',
     'auth.alreadyHaveAccount': 'Already have an account?',
     'auth.noAccount': 'Don\'t have an account?',
     'auth.signIn': 'Sign In',
     'auth.signUp': 'Sign Up',
+    'auth.loginButton': 'Login',
+    'auth.registerButton': 'Register',
     'auth.forgotPassword': 'Forgot password?',
     'auth.resetPassword': 'Reset password',
+    'auth.emailPlaceholder': 'Enter your email',
+    'auth.passwordPlaceholder': 'Enter your password',
+    'auth.usernamePlaceholder': 'Enter your username',
     
     // Games
     'games.create': 'Create game',
@@ -130,19 +151,24 @@ const translations = {
     'games.noGames': 'You don\'t have any games yet',
     'games.createFirst': 'Create your first game',
     
-    // Invitations
-    'invitations.manage': 'Manage invitations',
-    'invitations.create': 'Create invitation',
-    'invitations.link': 'Invitation link',
-    'invitations.copy': 'Copy link',
-    'invitations.copied': 'Link copied!',
-    'invitations.expire': 'Expires',
-    'invitations.role': 'Role',
-    'invitations.viewer': 'Viewer',
-    'invitations.player': 'Player',
-    'invitations.gm': 'Game Master',
-    'invitations.noInvitations': 'No active invitations',
-    'invitations.selectGame': 'Please select a game first',
+    // Success messages
+    'success.title': 'Success',
+    'success.loginSuccess': 'Successfully logged in',
+    'success.registerSuccess': 'Registration completed! Please check your email and click the confirmation link to activate your account.',
+    'success.logoutSuccess': 'Successfully logged out',
+    'success.passwordUpdated': 'Password updated successfully',
+    'success.accountDeleted': 'Account deleted successfully',
+    
+    // Error messages
+    'error.title': 'Error',
+    'error.fillAllFields': 'Please fill in all fields',
+    'error.passwordMismatch': 'Passwords do not match',
+    'error.loginFailed': 'Login failed',
+    'error.registerFailed': 'Registration failed',
+    'error.wrongOldPassword': 'Wrong old password',
+    'error.passwordUpdateFailed': 'Password update failed',
+    'error.accountDeleteFailed': 'Account deletion failed',
+    'error.userExists': 'User with this email and/or username already exists',
   }
 };
 

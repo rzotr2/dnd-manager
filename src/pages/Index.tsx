@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sword, Dices, Users, Palette, Shield, Scroll, User } from 'lucide-react';
+import { Sword, Dices, Users, Palette, Shield, Scroll, User, LogOut } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import ThemeSelector from '@/components/ThemeSelector';
@@ -19,7 +19,7 @@ const Index = () => {
   const [currentTheme, setCurrentTheme] = useState('theme-fantasy');
   const [currentGame, setCurrentGame] = useState<string | null>(null);
   const [showAccountManagement, setShowAccountManagement] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, signOut, user } = useAuth();
   const { t, language, setLanguage } = useLanguage();
 
   useEffect(() => {
@@ -60,12 +60,12 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/5">
-        <Sidebar className="border-r border-border/20 w-48">
-          <SidebarHeader className="p-2 space-y-2">
-            <div className="flex items-center justify-between gap-1 mb-1">
-              <div className="flex items-center gap-1">
-                <Shield className="w-3 h-3 text-primary" />
-                <span className="font-bold text-sm">DnD Manager</span>
+        <Sidebar className="border-r border-border/20 w-64 md:w-72">
+          <SidebarHeader className="p-4 space-y-4">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-primary" />
+                <span className="font-bold text-base">DnD Manager</span>
               </div>
               <div className="flex items-center gap-2">
                 <select 
@@ -80,14 +80,29 @@ const Index = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowAccountManagement(true)}
-                  className="h-6 w-6 p-0"
+                  className="h-7 w-7 p-0"
                 >
-                  <User className="w-3 h-3" />
+                  <User className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="h-7 w-7 p-0"
+                  title={t('auth.logout')}
+                >
+                  <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             </div>
+            
+            {user && (
+              <div className="text-xs text-muted-foreground mb-2">
+                {t('auth.welcome')}, {user.user_metadata?.username || user.email}!
+              </div>
+            )}
           </SidebarHeader>
-          <SidebarContent className="p-2">
+          <SidebarContent className="p-4">
             <GameManager 
               currentGame={currentGame}
               onGameChange={setCurrentGame}
@@ -97,29 +112,29 @@ const Index = () => {
         </Sidebar>
 
         <div className="flex-1 overflow-auto min-w-0">
-          <div className="max-w-5xl mx-auto p-2 space-y-2">
+          <div className="max-w-7xl mx-auto p-4 space-y-4">
             {/* Header */}
             <Card className="glass-effect border border-border/20">
-              <CardHeader className="text-center py-2">
-                <div className="flex items-center justify-between mb-1">
+              <CardHeader className="text-center py-4">
+                <div className="flex items-center justify-between mb-2">
                   <SidebarTrigger />
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-primary" />
-                    <span className="theme-gradient bg-clip-text text-transparent font-bold text-lg">
+                    <Shield className="w-5 h-5 text-primary" />
+                    <span className="theme-gradient bg-clip-text text-transparent font-bold text-xl">
                       {t('app.title')}
                     </span>
-                    <Scroll className="w-4 h-4 text-primary" />
+                    <Scroll className="w-5 h-5 text-primary" />
                   </div>
                   <div></div>
                 </div>
-                <p className="text-muted-foreground text-xs max-w-lg mx-auto">
+                <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
                   {t('app.subtitle')}
                 </p>
               </CardHeader>
             </Card>
 
             {/* Main Content */}
-            <Tabs defaultValue="characters" className="space-y-3">
+            <Tabs defaultValue="characters" className="space-y-4">
               <div className="px-4 md:px-0">
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-2 bg-card/60 backdrop-blur">
                   <TabsTrigger value="characters" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">
@@ -142,17 +157,17 @@ const Index = () => {
               </div>
 
               <TabsContent value="characters" className="animate-fade-in">
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {currentGame ? (
                     <CharacterSheet currentGameId={currentGame} />
                   ) : (
                     <Card className="border border-border/20">
-                      <CardContent className="p-3 text-center">
-                        <Users className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm font-medium text-muted-foreground mb-1">
+                      <CardContent className="p-6 text-center">
+                        <Users className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-base font-medium text-muted-foreground mb-2">
                           {t('characters.noGameSelected')}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           {t('characters.selectGame')}
                         </p>
                       </CardContent>
@@ -162,19 +177,19 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="dice" className="animate-fade-in">
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <DiceRoller />
                 </div>
               </TabsContent>
 
               <TabsContent value="combat" className="animate-fade-in">
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <CombatSystem />
                 </div>
               </TabsContent>
 
               <TabsContent value="themes" className="animate-fade-in">
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <ThemeSelector 
                     currentTheme={currentTheme}
                     onThemeChange={setCurrentTheme}
@@ -185,8 +200,8 @@ const Index = () => {
 
             {/* Footer */}
             <Card className="glass-effect border border-border/20">
-              <CardContent className="p-2 text-center">
-                <p className="text-xs text-muted-foreground flex items-center justify-center gap-2 flex-wrap">
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground flex items-center justify-center gap-4 flex-wrap">
                   <span className="flex items-center gap-1">
                     🎲 {t('app.currentGame')}: {currentGame ? t('app.active') : t('app.notSelected')}
                   </span>

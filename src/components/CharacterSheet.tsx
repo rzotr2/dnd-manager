@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useCharacters } from '@/hooks/useCharacters';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
-import { generateCharacter } from '@/utils/characterGenerator';
+import { generateBlankCharacter } from '@/utils/characterGenerator';
 
 interface CharacterField {
   id: string;
@@ -84,6 +84,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     const allFields = [...themeFields, ...newCharacterData.fields];
 
     const characterData = {
+      game_id: gameId,
       name: newCharacterData.name,
       photo: newCharacterData.photo,
       theme: theme,
@@ -98,7 +99,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   };
 
   const handleGenerateCharacter = () => {
-    const generated = generateCharacter(theme);
+    const generated = generateBlankCharacter();
     const themeFields = getFieldsForTheme(theme);
     
     // Заповнюємо базову інформацію

@@ -1,10 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface Translations {
-  [key: string]: {
-    [key: string]: string | Translations;
-  };
-}
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface LanguageContextType {
   language: string;
@@ -12,7 +7,7 @@ interface LanguageContextType {
   t: (key: string) => string;
 }
 
-const translations: Translations = {
+const translations: Record<string, Record<string, any>> = {
   uk: {
     common: {
       loading: 'Завантаження...',
@@ -55,6 +50,7 @@ const translations: Translations = {
     },
     games: {
       noGames: 'Немає ігор',
+      noGameSelected: 'Гру не вибрано',
       create: 'Створити гру',
       gameMembers: 'Учасники гри',
       noMembers: 'Немає учасників',
@@ -93,9 +89,6 @@ const translations: Translations = {
       expired: 'Закінчився',
       copyLink: 'Скопіювати посилання',
       deleteLink: 'Видалити посилання',
-      roleViewer: 'Спостерігач',
-      roleEditor: 'Редактор',
-      roleOwner: 'Власник',
     },
     notifications: {
       title: 'Сповіщення',
@@ -123,6 +116,9 @@ const translations: Translations = {
       invitationAccepted: 'Запрошення прийнято',
       invitationRejected: 'Запрошення відхилено',
       linkCopied: 'Посилання скопійовано',
+    },
+    error: {
+      title: 'Помилка',
     },
   },
   en: {
@@ -167,6 +163,7 @@ const translations: Translations = {
     },
     games: {
       noGames: 'No games',
+      noGameSelected: 'No game selected',
       create: 'Create Game',
       gameMembers: 'Game Members',
       noMembers: 'No members',
@@ -205,9 +202,6 @@ const translations: Translations = {
       expired: 'Expired',
       copyLink: 'Copy Link',
       deleteLink: 'Delete Link',
-      roleViewer: 'Viewer',
-      roleEditor: 'Editor',
-      roleOwner: 'Owner',
     },
     notifications: {
       title: 'Notifications',
@@ -235,6 +229,9 @@ const translations: Translations = {
       invitationAccepted: 'Invitation accepted',
       invitationRejected: 'Invitation rejected',
       linkCopied: 'Link copied',
+    },
+    error: {
+      title: 'Error',
     },
   },
 };

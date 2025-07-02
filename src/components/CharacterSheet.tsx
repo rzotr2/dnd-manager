@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -224,8 +223,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     const blankCharacter = generateBlankCharacter(theme);
     const baseFields = blankCharacter.fields || [];
     
+    // Safely handle character fields - ensure it's an object
+    const characterFields = currentCharacter.fields || {};
+    const safeCharacterFields = typeof characterFields === 'object' && !Array.isArray(characterFields) 
+      ? characterFields 
+      : {};
+    
     // Get custom fields from the character's stored fields
-    const customFields = Object.entries(currentCharacter.fields || {})
+    const customFields = Object.entries(safeCharacterFields)
       .filter(([key]) => !baseFields.some(field => field.name === key))
       .map(([key, value]) => ({
         name: key,

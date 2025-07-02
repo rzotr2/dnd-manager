@@ -223,10 +223,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     const blankCharacter = generateBlankCharacter(theme);
     const baseFields = blankCharacter.fields || [];
     
-    // Safely handle character fields - ensure it's an object
-    const characterFields = currentCharacter.fields || {};
-    const safeCharacterFields = typeof characterFields === 'object' && !Array.isArray(characterFields) 
-      ? characterFields 
+    // Safely handle character fields - ensure it's an object and not an array
+    const characterFields = currentCharacter.fields;
+    const safeCharacterFields = (characterFields && typeof characterFields === 'object' && !Array.isArray(characterFields)) 
+      ? characterFields as Record<string, any>
       : {};
     
     // Get custom fields from the character's stored fields

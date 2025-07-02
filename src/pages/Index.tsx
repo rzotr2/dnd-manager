@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +58,7 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-accent/5">
+      <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-accent/5 flex">
         <Sidebar className="border-r border-border/20">
           <SidebarHeader className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-2 mb-2">
@@ -111,8 +110,8 @@ const Index = () => {
           </SidebarContent>
         </Sidebar>
 
-        <main className="flex-1 transition-all duration-300 ease-in-out">
-          <div className="p-4 lg:p-8 space-y-6">
+        <main className="flex-1 min-w-0">
+          <div className="p-6 lg:p-8 space-y-6">
             {/* Header */}
             <Card className="glass-effect border border-border/20">
               <CardHeader className="text-center py-4">

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, User } from 'lucide-react';
+import { Plus, Edit, Trash2, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,12 @@ import { generateRandomCharacter } from '@/utils/characterGenerator';
 
 interface CharacterSheetProps {
   currentGameId: string;
+}
+
+interface CustomField {
+  name: string;
+  type: 'text' | 'textarea';
+  value: string;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
@@ -30,6 +36,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
     fields: {} as Record<string, any>
   });
 
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [characterType, setCharacterType] = useState<'random' | 'blank-themed' | 'blank-empty'>('random');
   const [selectedTheme, setSelectedTheme] = useState<string>('theme-fantasy');
 
@@ -42,6 +49,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
         photo: '',
         fields: randomChar.fields
       });
+      setCustomFields([]);
     } else if (characterType === 'blank-themed') {
       const emptyChar = generateRandomCharacter(selectedTheme, true);
       setNewCharacterData({
@@ -49,24 +57,46 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
         photo: '',
         fields: emptyChar.fields
       });
+      setCustomFields([]);
     } else {
       setNewCharacterData({
         name: '',
         photo: '',
         fields: {}
       });
+      setCustomFields([]);
     }
   }, [characterType, selectedTheme]);
 
+  const addCustomField = () => {
+    setCustomFields(prev => [...prev, { name: '', type: 'text', value: '' }]);
+  };
+
+  const updateCustomField = (index: number, field: Partial<CustomField>) => {
+    setCustomFields(prev => prev.map((f, i) => i === index ? { ...f, ...field } : f));
+  };
+
+  const removeCustomField = (index: number) => {
+    setCustomFields(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleCreateCharacter = async () => {
     if (!newCharacterData.name.trim() && characterType !== 'blank-empty') return;
+
+    // Combine generated fields with custom fields
+    const allFields = { ...newCharacterData.fields };
+    customFields.forEach(field => {
+      if (field.name.trim()) {
+        allFields[field.name] = field.value;
+      }
+    });
 
     const characterData = {
       game_id: currentGameId,
       name: newCharacterData.name || 'Новий персонаж',
       photo: newCharacterData.photo,
       theme: selectedTheme,
-      fields: newCharacterData.fields
+      fields: allFields
     };
 
     const created = await createCharacter(characterData);
@@ -99,6 +129,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
       photo: '',
       fields: {}
     });
+    setCustomFields([]);
     setCharacterType('random');
     setSelectedTheme('theme-fantasy');
   };
@@ -107,7 +138,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
     const character = isEditing ? editingCharacter : selectedCharacter;
     if (!character) return null;
 
-    const isTextarea = key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies');
+    const isTextarea = key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies') || key.includes('історія') || key.includes('опис');
 
     if (isEditing) {
       return isTextarea ? (
@@ -216,6 +247,70 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                     />
                   </div>
 
+                  {/* Кастомні поля */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Додаткові поля</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={addCustomField}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Додати поле
+                      </Button>
+                    </div>
+                    
+                    {customFields.map((field, index) => (
+                      <div key={index} className="flex gap-2 items-end">
+                        <div className="flex-1">
+                          <Label className="text-xs">Назва поля</Label>
+                          <Input
+                            value={field.name}
+                            onChange={(e) => updateCustomField(index, { name: e.target.value })}
+                            placeholder="Назва поля"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="w-32">
+                          <Label className="text-xs">Тип</Label>
+                          <Select value={field.type} onValueChange={(value: 'text' | 'textarea') => updateCustomField(index, { type: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Текст</SelectItem>
+                              <SelectItem value="textarea">Текстова область</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex-1">
+                          <Label className="text-xs">Значення</Label>
+                          {field.type === 'textarea' ? (
+                            <Textarea
+                              value={field.value}
+                              onChange={(e) => updateCustomField(index, { value: e.target.value })}
+                              placeholder="Значення"
+                              className="w-full"
+                            />
+                          ) : (
+                            <Input
+                              value={field.value}
+                              onChange={(e) => updateCustomField(index, { value: e.target.value })}
+                              placeholder="Значення"
+                              className="w-full"
+                            />
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeCustomField(index)}
+                          className="h-10 w-10 p-0"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Поля персонажа */}
                   {Object.keys(newCharacterData.fields).length > 0 && (
                     <div className="space-y-4">
@@ -224,7 +319,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                         {Object.entries(newCharacterData.fields).map(([key, value]) => (
                           <div key={key} className="space-y-2">
                             <Label className="text-sm font-medium">{key}</Label>
-                            {key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies') ? (
+                            {key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies') || key.includes('історія') || key.includes('опис') ? (
                               <Textarea
                                 value={value || ''}
                                 onChange={(e) => setNewCharacterData(prev => ({

@@ -75,17 +75,16 @@ export const useAuth = () => {
     try {
       setLoading(true);
       
-      // Check if email already exists by attempting a sign in
-      const { data: signInData } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-check'
-      });
-      
-      // If sign in doesn't throw an error about invalid credentials, email exists
-      if (signInData?.user) {
-        throw new Error(t('error.emailExists'));
-      }
+      // Check if email already exists by trying to get user data
+      const { data: existingUsers, error: checkError } = await supabase
+        .from('auth.users')
+        .select('email')
+        .eq('email', email)
+        .limit(1);
 
+      // If we can't check (which is expected since auth.users is protected), 
+      // we'll rely on Supabase's built-in duplicate handling
+      
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -98,37 +97,42 @@ export const useAuth = () => {
       });
 
       if (error) {
-        // Check for various user exists scenarios
-        if (error.message.includes('already') || error.message.includes('exists')) {
-          if (error.message.toLowerCase().includes('email')) {
-            throw new Error(t('error.emailExists'));
-          } else if (error.message.toLowerCase().includes('username')) {
-            throw new Error(t('error.usernameExists'));
-          } else {
-            throw new Error(t('error.userExists'));
-          }
+        // Handle specific Supabase errors
+        if (error.message.includes('already registered')) {
+          throw new Error(t('error.emailExists'));
+        }
+        if (error.message.includes('User already registered')) {
+          throw new Error(t('error.emailExists'));
         }
         throw error;
       }
 
-      // Always show success message for registration
-      toast({
-        title: t('success.title'),
-        description: t('success.registerSuccess'),
-      });
+      // Check if user was actually created (not just returned existing)
+      if (data.user && !data.session) {
+        // User exists but not confirmed - this is a new registration
+        toast({
+          title: t('success.title'),
+          description: t('success.registerSuccess'),
+        });
+      } else if (data.user && data.session) {
+        // User was created and auto-confirmed
+        toast({
+          title: t('success.title'),
+          description: t('success.registerSuccess'),
+        });
+      } else {
+        // Email already exists and user was not created
+        throw new Error(t('error.emailExists'));
+      }
 
       return { data, error: null };
     } catch (error: any) {
       console.error('Sign up error:', error);
-      
-      // Don't show error for dummy password check
-      if (!error.message.includes('Invalid login credentials')) {
-        toast({
-          title: t('error.title'),
-          description: error.message || t('error.registerFailed'),
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: t('error.title'),
+        description: error.message || t('error.registerFailed'),
+        variant: 'destructive',
+      });
       return { data: null, error };
     } finally {
       setLoading(false);

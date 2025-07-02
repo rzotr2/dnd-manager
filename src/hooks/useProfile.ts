@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -74,29 +75,37 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // First, get the invitations
+      const { data: invitationsData, error: invitationsError } = await supabase
         .from('game_invitations')
         .select(`
           *,
-          games (name, theme),
-          inviter_profile:profiles!game_invitations_invited_by_fkey (username, email)
+          games (name, theme)
         `)
         .eq('invited_user_id', user.id)
         .is('used_at', null)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching invitations:', error);
+      if (invitationsError) {
+        console.error('Error fetching invitations:', invitationsError);
         return;
       }
 
-      // Transform the data to match our interface
-      const transformedData = data?.map(invitation => ({
+      // Then, get the inviter profiles separately
+      const inviterIds = invitationsData?.map(inv => inv.invited_by) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, email')
+        .in('id', inviterIds);
+
+      if (profilesError) {
+        console.error('Error fetching inviter profiles:', profilesError);
+      }
+
+      // Combine the data
+      const transformedData = invitationsData?.map(invitation => ({
         ...invitation,
-        inviter_profile: invitation.inviter_profile ? {
-          username: invitation.inviter_profile.username,
-          email: invitation.inviter_profile.email,
-        } : null,
+        inviter_profile: profilesData?.find(profile => profile.id === invitation.invited_by) || null,
       })) as GameInvitation[];
 
       setInvitations(transformedData || []);

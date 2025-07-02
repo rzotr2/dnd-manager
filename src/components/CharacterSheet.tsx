@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Camera, Shuffle, User } from 'lucide-react';
+import { Plus, Edit, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useCharacters } from '@/hooks/useCharacters';
+import { useCharacters, Character } from '@/hooks/useCharacters';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateRandomCharacter } from '@/utils/characterGenerator';
-import { Character } from '@/integrations/supabase/types';
 
 interface CharacterSheetProps {
   currentGameId: string;
@@ -63,6 +62,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
     if (!newCharacterData.name.trim() && characterType !== 'blank-empty') return;
 
     const characterData = {
+      game_id: currentGameId,
       name: newCharacterData.name || 'Новий персонаж',
       photo: newCharacterData.photo,
       theme: selectedTheme,
@@ -166,7 +166,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                   Створити персонажа
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Створення персонажа</DialogTitle>
                 </DialogHeader>
@@ -355,7 +355,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
       {/* Діалог редагування */}
       {editingCharacter && (
         <Dialog open={!!editingCharacter} onOpenChange={() => setEditingCharacter(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Редагування персонажа</DialogTitle>
             </DialogHeader>

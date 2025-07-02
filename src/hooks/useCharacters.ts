@@ -3,22 +3,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export interface CharacterField {
-  id: string;
-  name: string;
-  value: string;
-  type: 'text' | 'number' | 'textarea';
-  category: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other';
-  isBonus?: boolean;
-}
-
 export interface Character {
   id: string;
   game_id: string;
   name: string;
   photo?: string;
   theme?: string;
-  fields: CharacterField[];
+  fields: Record<string, any>;
 }
 
 export const useCharacters = (gameId: string | null) => {
@@ -49,7 +40,7 @@ export const useCharacters = (gameId: string | null) => {
         name: char.name,
         photo: char.photo || undefined,
         theme: char.theme || 'theme-fantasy',
-        fields: Array.isArray(char.fields) ? char.fields as unknown as CharacterField[] : []
+        fields: char.fields || {}
       }));
       
       setCharacters(transformedData);
@@ -77,7 +68,7 @@ export const useCharacters = (gameId: string | null) => {
           name: characterData.name,
           photo: characterData.photo || null,
           theme: characterData.theme || 'theme-fantasy',
-          fields: characterData.fields as any, // Cast to any for JSONB insertion
+          fields: characterData.fields || {},
           user_id: user.id,
         }])
         .select()
@@ -92,7 +83,7 @@ export const useCharacters = (gameId: string | null) => {
         name: data.name,
         photo: data.photo || undefined,
         theme: data.theme || 'theme-fantasy',
-        fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
+        fields: data.fields || {}
       };
       
       setCharacters(prev => [transformedCharacter, ...prev]);
@@ -109,6 +100,7 @@ export const useCharacters = (gameId: string | null) => {
         description: 'Не вдалося створити персонажа',
         variant: 'destructive',
       });
+      return null;
     }
   };
 
@@ -119,7 +111,7 @@ export const useCharacters = (gameId: string | null) => {
       if (updates.name !== undefined) supabaseUpdates.name = updates.name;
       if (updates.photo !== undefined) supabaseUpdates.photo = updates.photo;
       if (updates.theme !== undefined) supabaseUpdates.theme = updates.theme;
-      if (updates.fields !== undefined) supabaseUpdates.fields = updates.fields as any;
+      if (updates.fields !== undefined) supabaseUpdates.fields = updates.fields;
 
       const { data, error } = await supabase
         .from('characters')
@@ -137,10 +129,11 @@ export const useCharacters = (gameId: string | null) => {
         name: data.name,
         photo: data.photo || undefined,
         theme: data.theme || 'theme-fantasy',
-        fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
+        fields: data.fields || {}
       };
       
       setCharacters(prev => prev.map(char => char.id === characterId ? transformedCharacter : char));
+      return transformedCharacter;
     } catch (error) {
       console.error('Error updating character:', error);
       toast({
@@ -148,6 +141,7 @@ export const useCharacters = (gameId: string | null) => {
         description: 'Не вдалося оновити персонажа',
         variant: 'destructive',
       });
+      return null;
     }
   };
 

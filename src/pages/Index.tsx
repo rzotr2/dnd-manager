@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -47,7 +48,8 @@ const Index = () => {
           <h1 className="text-2xl font-bold">GM Helper</h1>
           <div className="flex items-center gap-4">
             {user && <NotificationBell />}
-            <AuthForm />
+            {user && <AuthForm />}
+            {!user && <AuthForm />}
           </div>
         </div>
 

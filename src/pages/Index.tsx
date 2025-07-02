@@ -60,14 +60,14 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-accent/5">
-        <Sidebar className="border-r border-border/20 w-64 md:w-72">
+        <Sidebar className="border-r border-border/20 w-80 data-[state=collapsed]:w-16 transition-all duration-300 ease-in-out">
           <SidebarHeader className="p-4 space-y-4">
             <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" />
-                <span className="font-bold text-base">DnD Manager</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+                <span className="font-bold text-base truncate">DnD Manager</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <select 
                   value={language} 
                   onChange={(e) => setLanguage(e.target.value as 'uk' | 'en')}
@@ -97,7 +97,7 @@ const Index = () => {
             </div>
             
             {user && (
-              <div className="text-xs text-muted-foreground mb-2">
+              <div className="text-xs text-muted-foreground mb-2 truncate">
                 {t('auth.welcome')}, {user.user_metadata?.username || user.email}!
               </div>
             )}
@@ -112,20 +112,20 @@ const Index = () => {
         </Sidebar>
 
         <div className="flex-1 overflow-auto min-w-0">
-          <div className="max-w-7xl mx-auto p-4 space-y-4">
+          <div className="max-w-7xl mx-auto p-6 space-y-6">
             {/* Header */}
             <Card className="glass-effect border border-border/20">
               <CardHeader className="text-center py-4">
                 <div className="flex items-center justify-between mb-2">
-                  <SidebarTrigger />
-                  <div className="flex items-center gap-2">
+                  <SidebarTrigger className="flex-shrink-0" />
+                  <div className="flex items-center gap-2 flex-1 justify-center">
                     <Shield className="w-5 h-5 text-primary" />
                     <span className="theme-gradient bg-clip-text text-transparent font-bold text-xl">
                       {t('app.title')}
                     </span>
                     <Scroll className="w-5 h-5 text-primary" />
                   </div>
-                  <div></div>
+                  <div className="flex-shrink-0 w-10"></div>
                 </div>
                 <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
                   {t('app.subtitle')}
@@ -134,7 +134,7 @@ const Index = () => {
             </Card>
 
             {/* Main Content */}
-            <Tabs defaultValue="characters" className="space-y-4">
+            <Tabs defaultValue="characters" className="space-y-6">
               <div className="px-4 md:px-0">
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-2 bg-card/60 backdrop-blur">
                   <TabsTrigger value="characters" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">

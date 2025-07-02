@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,7 +41,16 @@ export const useAuth = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error messages
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error(t('error.invalidCredentials'));
+        }
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error(t('error.emailNotConfirmed'));
+        }
+        throw error;
+      }
 
       toast({
         title: t('success.title'),
@@ -67,6 +75,17 @@ export const useAuth = () => {
     try {
       setLoading(true);
       
+      // Check if email already exists by attempting a sign in
+      const { data: signInData } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-check'
+      });
+      
+      // If sign in doesn't throw an error about invalid credentials, email exists
+      if (signInData?.user) {
+        throw new Error(t('error.emailExists'));
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -79,9 +98,15 @@ export const useAuth = () => {
       });
 
       if (error) {
-        // Check if user already exists
+        // Check for various user exists scenarios
         if (error.message.includes('already') || error.message.includes('exists')) {
-          throw new Error(t('error.userExists'));
+          if (error.message.toLowerCase().includes('email')) {
+            throw new Error(t('error.emailExists'));
+          } else if (error.message.toLowerCase().includes('username')) {
+            throw new Error(t('error.usernameExists'));
+          } else {
+            throw new Error(t('error.userExists'));
+          }
         }
         throw error;
       }
@@ -95,11 +120,15 @@ export const useAuth = () => {
       return { data, error: null };
     } catch (error: any) {
       console.error('Sign up error:', error);
-      toast({
-        title: t('error.title'),
-        description: error.message || t('error.registerFailed'),
-        variant: 'destructive',
-      });
+      
+      // Don't show error for dummy password check
+      if (!error.message.includes('Invalid login credentials')) {
+        toast({
+          title: t('error.title'),
+          description: error.message || t('error.registerFailed'),
+          variant: 'destructive',
+        });
+      }
       return { data: null, error };
     } finally {
       setLoading(false);

@@ -71,6 +71,18 @@ const translations = {
     'games.noGames': 'У вас ще немає ігор',
     'games.createFirst': 'Створіть свою першу гру',
     
+    // Account Management
+    'account.title': 'Управління акаунтом',
+    'account.changePassword': 'Зміна паролю',
+    'account.oldPassword': 'Старий пароль',
+    'account.newPassword': 'Новий пароль',
+    'account.confirmNewPassword': 'Підтвердіть новий пароль',
+    'account.updatePassword': 'Оновити пароль',
+    'account.deleteAccount': 'Видалити акаунт',
+    'account.confirmDelete': 'Ця дія незворотна. Ваш акаунт та всі дані будуть видалені назавжди.',
+    'account.deleteConfirm': 'Так, видалити',
+    'account.back': 'Назад',
+    
     // Success messages
     'success.title': 'Успішно',
     'success.loginSuccess': 'Успішний вхід в систему',
@@ -89,6 +101,10 @@ const translations = {
     'error.passwordUpdateFailed': 'Помилка оновлення пароля',
     'error.accountDeleteFailed': 'Помилка видалення акаунту',
     'error.userExists': 'Користувач з таким email та/або іменем користувача вже існує',
+    'error.emailExists': 'Користувач з таким email вже існує',
+    'error.usernameExists': 'Користувач з таким іменем користувача вже існує',
+    'error.invalidCredentials': 'Неправильний email або пароль',
+    'error.emailNotConfirmed': 'Email не підтверджено. Перевірте свою пошту',
   },
   en: {
     // App
@@ -151,6 +167,18 @@ const translations = {
     'games.noGames': 'You don\'t have any games yet',
     'games.createFirst': 'Create your first game',
     
+    // Account Management
+    'account.title': 'Account Management',
+    'account.changePassword': 'Change Password',
+    'account.oldPassword': 'Old Password',
+    'account.newPassword': 'New Password',
+    'account.confirmNewPassword': 'Confirm New Password',
+    'account.updatePassword': 'Update Password',
+    'account.deleteAccount': 'Delete Account',
+    'account.confirmDelete': 'This action cannot be undone. Your account and all data will be permanently deleted.',
+    'account.deleteConfirm': 'Yes, delete',
+    'account.back': 'Back',
+    
     // Success messages
     'success.title': 'Success',
     'success.loginSuccess': 'Successfully logged in',
@@ -169,6 +197,10 @@ const translations = {
     'error.passwordUpdateFailed': 'Password update failed',
     'error.accountDeleteFailed': 'Account deletion failed',
     'error.userExists': 'User with this email and/or username already exists',
+    'error.emailExists': 'User with this email already exists',
+    'error.usernameExists': 'User with this username already exists',
+    'error.invalidCredentials': 'Invalid email or password',
+    'error.emailNotConfirmed': 'Email not confirmed. Please check your email',
   }
 };
 

@@ -22,7 +22,7 @@ const THEMES = [
 
 const GAME_MODES = [
   { id: 'simple', name: 'Спрощений', description: 'Для швидких ігор' },
-  { id: 'standard', name: 'Стандартний', description: 'Повний набір правил' }
+  { id: 'advanced', name: 'Стандартний', description: 'Повний набір правил' }
 ];
 
 interface GameManagerProps {
@@ -44,7 +44,7 @@ const GameManager: React.FC<GameManagerProps> = ({
     name: '',
     description: '',
     theme: 'theme-fantasy',
-    mode: 'simple'
+    mode: 'simple' as 'simple' | 'advanced'
   });
 
   // Вибрати першу гру автоматично, якщо немає поточної
@@ -86,7 +86,7 @@ const GameManager: React.FC<GameManagerProps> = ({
         name: '',
         description: '',
         theme: 'theme-fantasy',
-        mode: 'simple'
+        mode: 'simple' as 'simple' | 'advanced'
       });
     }
   };
@@ -120,9 +120,9 @@ const GameManager: React.FC<GameManagerProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Поточна гра */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h3 className="font-semibold text-sm">Поточна гра</h3>
         {games.length === 0 ? (
           <p className="text-xs text-muted-foreground">{t('games.noGames')}</p>
@@ -150,7 +150,7 @@ const GameManager: React.FC<GameManagerProps> = ({
       {/* Інформація про поточну гру */}
       {currentGameData && (
         <Card className="bg-muted/20">
-          <CardContent className="p-3 space-y-2">
+          <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-sm">{currentGameData.name}</h4>
               <Button
@@ -178,7 +178,7 @@ const GameManager: React.FC<GameManagerProps> = ({
       )}
 
       {/* Кнопки керування */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="w-full justify-start text-xs h-8">
@@ -186,12 +186,12 @@ const GameManager: React.FC<GameManagerProps> = ({
               {t('games.create')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="space-y-6">
+          <DialogContent className="space-y-8">
             <DialogHeader>
               <DialogTitle>{t('games.create')}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-3">
+            <div className="space-y-8">
+              <div className="space-y-4">
                 <Label htmlFor="gameName">{t('common.name')}</Label>
                 <Input
                   id="gameName"
@@ -201,7 +201,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                 />
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label htmlFor="gameDescription">{t('common.description')}</Label>
                 <Textarea
                   id="gameDescription"
@@ -212,7 +212,7 @@ const GameManager: React.FC<GameManagerProps> = ({
                 />
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label>Тема</Label>
                 <Select 
                   value={newGameData.theme} 
@@ -234,11 +234,11 @@ const GameManager: React.FC<GameManagerProps> = ({
                 </Select>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Label>Режим гри</Label>
                 <Select 
                   value={newGameData.mode} 
-                  onValueChange={(value) => setNewGameData(prev => ({ ...prev, mode: value }))}
+                  onValueChange={(value: 'simple' | 'advanced') => setNewGameData(prev => ({ ...prev, mode: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

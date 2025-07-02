@@ -34,33 +34,27 @@ const NotificationBell: React.FC = () => {
   };
 
   const getThemeName = (theme: string) => {
-    const themes: { [key: string]: string } = {
-      'theme-fantasy': 'Фентезі',
-      'theme-cyberpunk': 'Кіберпанк',
-      'theme-stalker': 'Сталкер',
-      'theme-scifi': 'Наукова фантастика'
-    };
-    return themes[theme] || theme;
+    return t(`themes.${theme?.replace('theme-', '') || 'fantasy'}`);
   };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative">
+        <Button variant="ghost" size="sm" className="relative hover:bg-accent">
           <Bell className="w-5 h-5" />
           {unreadInvitationsCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs min-w-[1.25rem]"
             >
               {unreadInvitationsCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <Card className="border-0 shadow-none">
-          <CardHeader className="pb-3">
+      <PopoverContent className="w-80 p-0 bg-popover border shadow-lg" align="end">
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardHeader className="pb-3 px-4 pt-4">
             <CardTitle className="text-base flex items-center gap-2">
               <Bell className="w-4 h-4" />
               {t('notifications.title')}
@@ -68,14 +62,14 @@ const NotificationBell: React.FC = () => {
           </CardHeader>
           <CardContent className="p-0">
             {invitations.length === 0 ? (
-              <div className="p-4 text-center text-muted-foreground">
+              <div className="p-6 text-center text-muted-foreground">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t('notifications.noInvitations')}</p>
+                <p className="text-sm">{t('notifications.noNotifications')}</p>
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto">
                 {invitations.map((invitation) => (
-                  <div key={invitation.id} className="p-4 border-b border-border/50 last:border-b-0">
+                  <div key={invitation.id} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -92,8 +86,8 @@ const NotificationBell: React.FC = () => {
                             <Badge variant="outline" className="text-xs">
                               {getThemeName(invitation.games?.theme || '')}
                             </Badge>
-                            <Badge className={`${getRoleBadgeColor(invitation.role)} text-xs`}>
-                              {t(`invitations.role${invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}`)}
+                            <Badge className={`${getRoleBadgeColor(invitation.role)} text-xs border-0`}>
+                              {t(`members.${invitation.role}`)}
                             </Badge>
                           </div>
                         </div>

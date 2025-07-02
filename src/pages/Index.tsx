@@ -6,25 +6,7 @@ import AuthForm from '@/components/AuthForm';
 import GameManager from '@/components/GameManager';
 import CharacterSheet from '@/components/CharacterSheet';
 import NotificationBell from '@/components/NotificationBell';
-
-const themes = {
-  'theme-fantasy': {
-    background: 'bg-fantasy-light dark:bg-fantasy-dark',
-    text: 'text-gray-800 dark:text-gray-100',
-  },
-  'theme-cyberpunk': {
-    background: 'bg-cyberpunk-light dark:bg-cyberpunk-dark',
-    text: 'text-gray-800 dark:text-gray-100',
-  },
-  'theme-stalker': {
-    background: 'bg-stalker-light dark:bg-stalker-dark',
-    text: 'text-gray-800 dark:text-gray-100',
-  },
-  'theme-scifi': {
-    background: 'bg-scifi-light dark:bg-scifi-dark',
-    text: 'text-gray-800 dark:text-gray-100',
-  },
-};
+import LanguageSelector from '@/components/auth/LanguageSelector';
 
 const Index = () => {
   const { user } = useAuth();
@@ -38,43 +20,56 @@ const Index = () => {
 
   const handleThemeChange = (theme: string) => {
     setCurrentTheme(theme);
+    document.documentElement.className = theme;
   };
 
+  // Apply theme to document
+  React.useEffect(() => {
+    document.documentElement.className = currentTheme;
+  }, [currentTheme]);
+
   return (
-    <div className={`min-h-screen ${themes[currentTheme].background} ${themes[currentTheme].text} transition-colors duration-300`}>
-      <div className="container mx-auto p-4 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">GM Helper</h1>
+    <div className={`min-h-screen bg-background text-foreground transition-colors duration-300`}>
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold">GM Helper</h1>
+            <LanguageSelector />
+          </div>
+          
           <div className="flex items-center gap-4">
             {user && <NotificationBell />}
-            {user && <AuthForm />}
-            {!user && <AuthForm />}
+            <AuthForm />
           </div>
         </div>
+      </header>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Left Panel: Game Management */}
-          <div className="md:col-span-1">
-            <GameManager
-              currentGame={currentGame}
-              onGameChange={handleGameChange}
-              onThemeChange={handleThemeChange}
-            />
-          </div>
+      {/* Main Content */}
+      <div className="flex min-h-[calc(100vh-3.5rem)]">
+        {/* Left Sidebar - Game Management */}
+        <aside className="w-80 border-r bg-muted/10 p-6">
+          <GameManager
+            currentGame={currentGame}
+            onGameChange={handleGameChange}
+            onThemeChange={handleThemeChange}
+          />
+        </aside>
 
-          {/* Right Panel: Character Sheet */}
-          <div className="md:col-span-3">
-            {currentGame ? (
-              <CharacterSheet gameId={currentGame} theme={currentTheme} />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-lg text-muted-foreground">{t('games.noGameSelected')}</p>
+        {/* Main Content Area */}
+        <main className="flex-1 p-6">
+          {currentGame ? (
+            <CharacterSheet gameId={currentGame} theme={currentTheme} />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <div className="mb-4 text-4xl">🎲</div>
+                <h2 className="mb-2 text-2xl font-bold">{t('games.selectGame')}</h2>
+                <p className="text-muted-foreground">{t('games.noGameSelected')}</p>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

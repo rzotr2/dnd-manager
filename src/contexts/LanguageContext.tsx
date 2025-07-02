@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface LanguageContextType {
@@ -32,6 +31,11 @@ const translations: Record<string, Record<string, any>> = {
       emailExists: 'Електронна пошта вже використовується',
       title: 'Помилка',
       successTitle: 'Успіх',
+      save: 'Зберегти',
+      cancel: 'Скасувати',
+      delete: 'Видалити',
+      edit: 'Редагувати',
+      close: 'Закрити',
     },
     auth: {
       login: 'Увійти',
@@ -54,6 +58,10 @@ const translations: Record<string, Record<string, any>> = {
       create: 'Створити гру',
       gameMembers: 'Учасники гри',
       noMembers: 'Немає учасників',
+      selectGame: 'Оберіть гру',
+      createNewGame: 'Створити нову гру',
+      gameSettings: 'Налаштування гри',
+      themes: 'Теми оформлення',
     },
     members: {
       you: 'Ви',
@@ -96,6 +104,7 @@ const translations: Record<string, Record<string, any>> = {
       invitedBy: 'Запросив:',
       accept: 'Прийняти',
       reject: 'Відхилити',
+      noNotifications: 'Немає сповіщень',
     },
     characters: {
       title: 'Персонажі',
@@ -104,6 +113,29 @@ const translations: Record<string, Record<string, any>> = {
       namePlaceholder: "Ім'я персонажа",
       photo: 'Фото',
       uploadPhoto: 'Завантажити фото',
+      characterSheet: 'Картка персонажа',
+      basicInfo: 'Базова інформація',
+      stats: 'Характеристики',
+      skills: 'Навички',
+      equipment: 'Спорядження',
+      notes: 'Примітки',
+      fieldName: 'Назва поля',
+      fieldValue: 'Значення',
+      addField: 'Додати поле',
+      removeField: 'Видалити поле',
+      selectCharacter: 'Оберіть персонажа',
+    },
+    themes: {
+      fantasy: 'Фентезі',
+      cyberpunk: 'Кіберпанк',
+      stalker: 'Сталкер',
+      scifi: 'Наукова фантастика',
+      classic: 'Класичний',
+      minimalist: 'Мінімалізм',
+      retro: 'Ретро',
+      space: 'Космос',
+      western: 'Вестерн',
+      apocalypse: 'Постапокаліпсис',
     },
     success: {
       title: 'Успіх',
@@ -116,9 +148,17 @@ const translations: Record<string, Record<string, any>> = {
       invitationAccepted: 'Запрошення прийнято',
       invitationRejected: 'Запрошення відхилено',
       linkCopied: 'Посилання скопійовано',
+      characterCreated: 'Персонажа створено',
+      characterUpdated: 'Персонажа оновлено',
+      fieldAdded: 'Поле додано',
+      fieldRemoved: 'Поле видалено',
     },
     error: {
       title: 'Помилка',
+      generic: 'Щось пішло не так',
+      networkError: 'Помилка мережі',
+      unauthorized: 'Немає доступу',
+      notFound: 'Не знайдено',
     },
   },
   en: {
@@ -145,6 +185,11 @@ const translations: Record<string, Record<string, any>> = {
       emailExists: 'Email already exists',
       title: 'Error',
       successTitle: 'Success',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      close: 'Close',
     },
     auth: {
       login: 'Login',
@@ -167,6 +212,10 @@ const translations: Record<string, Record<string, any>> = {
       create: 'Create Game',
       gameMembers: 'Game Members',
       noMembers: 'No members',
+      selectGame: 'Select game',
+      createNewGame: 'Create new game',
+      gameSettings: 'Game Settings',
+      themes: 'Themes',
     },
     members: {
       you: 'You',
@@ -209,6 +258,7 @@ const translations: Record<string, Record<string, any>> = {
       invitedBy: 'Invited by:',
       accept: 'Accept',
       reject: 'Reject',
+      noNotifications: 'No notifications',
     },
     characters: {
       title: 'Characters',
@@ -217,6 +267,29 @@ const translations: Record<string, Record<string, any>> = {
       namePlaceholder: 'Character name',
       photo: 'Photo',
       uploadPhoto: 'Upload Photo',
+      characterSheet: 'Character Sheet',
+      basicInfo: 'Basic Information',
+      stats: 'Stats',
+      skills: 'Skills',
+      equipment: 'Equipment',
+      notes: 'Notes',
+      fieldName: 'Field Name',
+      fieldValue: 'Value',
+      addField: 'Add Field',
+      removeField: 'Remove Field',
+      selectCharacter: 'Select Character',
+    },
+    themes: {
+      fantasy: 'Fantasy',
+      cyberpunk: 'Cyberpunk',
+      stalker: 'Stalker',
+      scifi: 'Sci-Fi',
+      classic: 'Classic',
+      minimalist: 'Minimalist',
+      retro: 'Retro',
+      space: 'Space',
+      western: 'Western',
+      apocalypse: 'Apocalypse',
     },
     success: {
       title: 'Success',
@@ -229,9 +302,17 @@ const translations: Record<string, Record<string, any>> = {
       invitationAccepted: 'Invitation accepted',
       invitationRejected: 'Invitation rejected',
       linkCopied: 'Link copied',
+      characterCreated: 'Character created',
+      characterUpdated: 'Character updated',
+      fieldAdded: 'Field added',
+      fieldRemoved: 'Field removed',
     },
     error: {
       title: 'Error',
+      generic: 'Something went wrong',
+      networkError: 'Network error',
+      unauthorized: 'Unauthorized',
+      notFound: 'Not found',
     },
   },
 };
@@ -243,7 +324,7 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('uk');
 
   const t = (key: string): string => {
     const keys = key.split('.');

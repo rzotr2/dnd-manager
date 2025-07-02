@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface CharacterField {
   id: string;
@@ -17,6 +17,7 @@ export interface Character {
   game_id: string;
   name: string;
   photo?: string;
+  theme?: string;
   fields: CharacterField[];
 }
 
@@ -47,6 +48,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: char.game_id,
         name: char.name,
         photo: char.photo || undefined,
+        theme: char.theme || 'theme-fantasy',
         fields: Array.isArray(char.fields) ? char.fields as unknown as CharacterField[] : []
       }));
       
@@ -74,6 +76,7 @@ export const useCharacters = (gameId: string | null) => {
           game_id: characterData.game_id,
           name: characterData.name,
           photo: characterData.photo || null,
+          theme: characterData.theme || 'theme-fantasy',
           fields: characterData.fields as any, // Cast to any for JSONB insertion
           user_id: user.id,
         }])
@@ -88,6 +91,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: data.game_id,
         name: data.name,
         photo: data.photo || undefined,
+        theme: data.theme || 'theme-fantasy',
         fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
       };
       
@@ -114,6 +118,7 @@ export const useCharacters = (gameId: string | null) => {
       const supabaseUpdates: any = {};
       if (updates.name !== undefined) supabaseUpdates.name = updates.name;
       if (updates.photo !== undefined) supabaseUpdates.photo = updates.photo;
+      if (updates.theme !== undefined) supabaseUpdates.theme = updates.theme;
       if (updates.fields !== undefined) supabaseUpdates.fields = updates.fields as any;
 
       const { data, error } = await supabase
@@ -131,6 +136,7 @@ export const useCharacters = (gameId: string | null) => {
         game_id: data.game_id,
         name: data.name,
         photo: data.photo || undefined,
+        theme: data.theme || 'theme-fantasy',
         fields: Array.isArray(data.fields) ? data.fields as unknown as CharacterField[] : []
       };
       

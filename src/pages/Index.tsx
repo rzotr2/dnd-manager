@@ -121,20 +121,20 @@ const Index = () => {
             {/* Main Content */}
             <Tabs defaultValue="characters" className="space-y-3">
               <div className="px-4 md:px-0">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-20 md:h-10 p-1 bg-card/60 backdrop-blur gap-1">
-                  <TabsTrigger value="characters" className="flex items-center gap-1 py-6 md:py-2 px-4 md:px-3 text-sm flex-col md:flex-row">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-2 bg-card/60 backdrop-blur">
+                  <TabsTrigger value="characters" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">
                     <Users className="w-4 h-4" />
                     <span className="text-xs md:text-sm">{t('tabs.characters')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="dice" className="flex items-center gap-1 py-6 md:py-2 px-4 md:px-3 text-sm flex-col md:flex-row">
+                  <TabsTrigger value="dice" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">
                     <Dices className="w-4 h-4" />
                     <span className="text-xs md:text-sm">{t('tabs.dice')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="combat" className="flex items-center gap-1 py-6 md:py-2 px-4 md:px-3 text-sm flex-col md:flex-row">
+                  <TabsTrigger value="combat" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">
                     <Sword className="w-4 h-4" />
                     <span className="text-xs md:text-sm">{t('tabs.combat')}</span>
                   </TabsTrigger>
-                  <TabsTrigger value="themes" className="flex items-center gap-1 py-6 md:py-2 px-4 md:px-3 text-sm flex-col md:flex-row">
+                  <TabsTrigger value="themes" className="flex items-center gap-2 py-3 px-4 text-sm flex-col md:flex-row min-h-[60px] md:min-h-[40px]">
                     <Palette className="w-4 h-4" />
                     <span className="text-xs md:text-sm">{t('tabs.themes')}</span>
                   </TabsTrigger>

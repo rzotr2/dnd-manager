@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Plus, Edit3, Trash2, Save, Upload, Camera, Shuffle, Settings } from 'lucide-react';
+import { User, Plus, Edit3, Trash2, Upload, Camera, Shuffle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useCharacters, CharacterField } from '@/hooks/useCharacters';
-import { generateRandomCharacter, gameModes } from '@/utils/characterGenerator';
+import { generateRandomCharacter, generateBlankCharacter, gameModes } from '@/utils/characterGenerator';
+import { useGames } from '@/hooks/useGames';
 
 interface NewFieldState {
   name: string;
@@ -25,15 +26,20 @@ interface CharacterSheetProps {
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
   const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(currentGameId);
+  const { games } = useGames();
   const [activeCharacter, setActiveCharacter] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isBlankDialogOpen, setIsBlankDialogOpen] = useState(false);
   const [gameMode, setGameMode] = useState<'simple' | 'standard'>('simple');
   const [newField, setNewField] = useState<NewFieldState>({ 
     name: '', 
     type: 'text', 
     category: 'other' 
   });
+
+  const currentGame = games.find(g => g.id === currentGameId);
+  const currentGameTheme = currentGame?.theme || 'theme-fantasy';
 
   React.useEffect(() => {
     if (characters.length > 0 && !activeCharacter) {
@@ -80,7 +86,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
   const handleCreateRandomCharacter = async () => {
     if (!currentGameId) return;
     
-    const randomCharacter = generateRandomCharacter(gameMode, currentGameId);
+    const randomCharacter = generateRandomCharacter(gameMode, currentGameId, currentGameTheme);
     const createdCharacter = await createCharacter(randomCharacter);
     
     if (createdCharacter) {
@@ -89,23 +95,26 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
     }
   };
 
-  const handleCreateBlankCharacter = async () => {
+  const handleCreateBlankCharacter = async (withFields: boolean) => {
     if (!currentGameId) return;
     
-    const blankCharacter = {
-      game_id: currentGameId,
-      name: 'Новий персонаж',
-      fields: [
-        { id: 'strength', name: 'Сила', value: '10', type: 'number' as const, category: 'stats' as const },
-        { id: 'dexterity', name: 'Спритність', value: '10', type: 'number' as const, category: 'stats' as const },
-        { id: 'constitution', name: 'Витривалість', value: '10', type: 'number' as const, category: 'stats' as const }
-      ]
-    };
+    let blankCharacter;
+    if (withFields) {
+      blankCharacter = generateBlankCharacter(currentGameId, currentGameTheme, gameMode);
+    } else {
+      blankCharacter = {
+        game_id: currentGameId,
+        name: 'Новий персонаж',
+        theme: currentGameTheme,
+        fields: []
+      };
+    }
     
     const createdCharacter = await createCharacter(blankCharacter);
     
     if (createdCharacter) {
       setActiveCharacter(createdCharacter.id);
+      setIsBlankDialogOpen(false);
       setIsCreateDialogOpen(false);
     }
   };
@@ -130,11 +139,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
     const fields = getFieldsByCategory(category);
     
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <h3 className="text-lg font-semibold text-primary">{title}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {fields.map(field => (
-            <div key={field.id} className="space-y-2">
+            <div key={field.id} className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor={field.id} className="flex items-center gap-2">
                   {field.name}
@@ -161,7 +170,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                   value={field.value}
                   onChange={(e) => updateField(field.id, e.target.value)}
                   placeholder={`Введіть ${field.name.toLowerCase()}`}
-                  className={field.isBonus ? 'border-yellow-300 bg-yellow-50' : ''}
+                  className={`min-h-[120px] ${field.isBonus ? 'border-yellow-300 bg-yellow-50' : ''}`}
                 />
               ) : (
                 <Input
@@ -210,12 +219,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                   Новий персонаж
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="space-y-6">
                 <DialogHeader>
                   <DialogTitle>Створити персонажа</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
+                <div className="space-y-6">
+                  <div className="space-y-3">
                     <Label>Режим гри</Label>
                     <Select value={gameMode} onValueChange={(value: 'simple' | 'standard') => setGameMode(value)}>
                       <SelectTrigger>
@@ -234,15 +243,37 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                     </Select>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button onClick={handleCreateRandomCharacter} className="flex-1">
+                  <div className="flex flex-col gap-3">
+                    <Button onClick={handleCreateRandomCharacter} className="w-full">
                       <Shuffle className="w-4 h-4 mr-2" />
                       Випадковий персонаж
                     </Button>
-                    <Button onClick={handleCreateBlankCharacter} variant="outline" className="flex-1">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Пустий персонаж
-                    </Button>
+                    <Dialog open={isBlankDialogOpen} onOpenChange={setIsBlankDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Пустий персонаж
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="space-y-6">
+                        <DialogHeader>
+                          <DialogTitle>Тип пустого персонажа</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Оберіть, як створити пустого персонажа:
+                          </p>
+                          <div className="flex flex-col gap-3">
+                            <Button onClick={() => handleCreateBlankCharacter(true)} className="w-full">
+                              З пустими полями (під тему)
+                            </Button>
+                            <Button onClick={() => handleCreateBlankCharacter(false)} variant="outline" className="w-full">
+                              Повністю пустий
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </DialogContent>
@@ -270,10 +301,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
 
               {characters.map(character => (
                 <TabsContent key={character.id} value={character.id}>
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     {/* Character Info & Photo */}
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <div className="flex-1">
+                    <div className="flex flex-col md:flex-row gap-8">
+                      <div className="flex-1 space-y-3">
                         <Label htmlFor="characterName">Ім'я персонажа</Label>
                         <Input
                           id="characterName"
@@ -283,7 +314,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                         />
                       </div>
                       
-                      <div className="flex flex-col items-center space-y-2">
+                      <div className="flex flex-col items-center space-y-4">
                         <Label>Фото персонажа</Label>
                         <div className="relative">
                           {character.photo ? (
@@ -322,55 +353,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                     {/* Add New Field */}
                     {isEditing && (
                       <Card className="border-dashed border-2 border-muted-foreground/25">
-                        <CardContent className="p-4">
-                          <div className="flex flex-col sm:flex-row gap-2">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col gap-4">
                             <Input
                               placeholder="Назва нового поля"
                               value={newField.name}
                               onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
                             />
-                            <Select 
-                              value={newField.type} 
-                              onValueChange={(value: 'text' | 'number' | 'textarea') => 
-                                setNewField(prev => ({ ...prev, type: value }))
-                              }
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="text">Текст</SelectItem>
-                                <SelectItem value="number">Число</SelectItem>
-                                <SelectItem value="textarea">Опис</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Select 
-                              value={newField.category} 
-                              onValueChange={(value: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other') => 
-                                setNewField(prev => ({ ...prev, category: value }))
-                              }
-                            >
-                              <SelectTrigger className="w-40">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="stats">Характеристики</SelectItem>
-                                <SelectItem value="skills">Навички</SelectItem>
-                                <SelectItem value="abilities">Здібності</SelectItem>
-                                <SelectItem value="equipment">Спорядження</SelectItem>
-                                <SelectItem value="other">Інше</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button onClick={addNewField}>
-                              <Plus className="w-4 h-4" />
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                              <Select 
+                                value={newField.type} 
+                                onValueChange={(value: 'text' | 'number' | 'textarea') => 
+                                  setNewField(prev => ({ ...prev, type: value }))
+                                }
+                              >
+                                <SelectTrigger className="w-full sm:w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="text">Текст</SelectItem>
+                                  <SelectItem value="number">Число</SelectItem>
+                                  <SelectItem value="textarea">Опис</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Select 
+                                value={newField.category} 
+                                onValueChange={(value: 'stats' | 'skills' | 'abilities' | 'equipment' | 'other') => 
+                                  setNewField(prev => ({ ...prev, category: value }))
+                                }
+                              >
+                                <SelectTrigger className="w-full sm:w-48">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="stats">Характеристики</SelectItem>
+                                  <SelectItem value="skills">Навички</SelectItem>
+                                  <SelectItem value="abilities">Здібності</SelectItem>
+                                  <SelectItem value="equipment">Спорядження</SelectItem>
+                                  <SelectItem value="other">Інше</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button onClick={addNewField} className="w-full sm:w-auto">
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
                     )}
 
                     {/* Edit Toggle */}
-                    <div className="flex justify-between items-center pt-4 border-t">
+                    <div className="flex justify-between items-center pt-6 border-t space-y-4">
                       <Button
                         variant="outline"
                         onClick={() => setIsEditing(!isEditing)}

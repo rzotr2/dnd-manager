@@ -1,22 +1,23 @@
+
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Upload, Camera, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCharacters } from '@/hooks/useCharacters';
+import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
+import DiceRoller from '@/components/DiceRoller';
+import CombatSystem from '@/components/CombatSystem';
 import { generateBlankCharacter } from '@/utils/characterGenerator';
 
 interface CharacterField {
-  id: string;
   name: string;
-  value: string;
-  type: 'text' | 'textarea' | 'number';
+  value: string | number;
+  type: 'text' | 'number' | 'textarea';
+  category: 'basic' | 'stats' | 'skills' | 'equipment' | 'notes';
 }
 
 interface CharacterSheetProps {
@@ -24,413 +25,473 @@ interface CharacterSheetProps {
   theme: string;
 }
 
-// Поля для теми Сталкер
-const STALKER_FIELDS = [
-  { id: 'visual_description', name: 'Візуальний опис', type: 'textarea' as const },
-  { id: 'special_feature', name: 'Особлива прикмета', type: 'textarea' as const },
-  { id: 'background', name: 'Минуле та характер', type: 'textarea' as const },
-  { id: 'habits', name: 'Звички та захоплення', type: 'textarea' as const },
-  { id: 'strength', name: 'Сила', type: 'number' as const },
-  { id: 'agility', name: 'Спритність', type: 'number' as const },
-  { id: 'perception', name: 'Сприйняття', type: 'number' as const },
-  { id: 'charisma', name: 'Харизма', type: 'number' as const },
-  { id: 'intelligence', name: 'Інтелект', type: 'number' as const },
-  { id: 'health_points', name: 'Очки Здоров\'я (ОЗ)', type: 'number' as const },
-  { id: 'armor_class', name: 'Клас Броні (КБ)', type: 'number' as const },
-  { id: 'survival', name: 'Виживання', type: 'text' as const },
-  { id: 'search_hidden', name: 'Пошук прихованого', type: 'text' as const },
-  { id: 'knowledge', name: 'Знання', type: 'text' as const },
-  { id: 'athletics', name: 'Атлетизм', type: 'text' as const },
-  { id: 'endurance', name: 'Витривалість', type: 'text' as const },
-  { id: 'positive_perk', name: 'Позитивний перк', type: 'textarea' as const },
-  { id: 'negative_perk', name: 'Негативний перк', type: 'textarea' as const },
-  { id: 'clothing', name: 'Одяг', type: 'textarea' as const },
-  { id: 'equipment', name: 'Спорядження', type: 'textarea' as const },
-  { id: 'food', name: 'Їжа', type: 'textarea' as const },
-  { id: 'documents_money', name: 'Документи та гроші', type: 'textarea' as const },
-];
-
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
+  const [characterName, setCharacterName] = useState('');
+  const [characterPhoto, setCharacterPhoto] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const { toast } = useToast();
   const { t } = useLanguage();
-  const { user } = useAuth();
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingCharacter, setEditingCharacter] = useState<string | null>(null);
-  const [newCharacterData, setNewCharacterData] = useState({
-    name: '',
-    photo: '',
-    fields: [] as CharacterField[],
-  });
+  const currentCharacter = characters.find(char => char.id === selectedCharacter);
 
-  // Генерація полів для різних тем
-  const getFieldsForTheme = (selectedTheme: string): CharacterField[] => {
-    if (selectedTheme === 'theme-stalker') {
-      return STALKER_FIELDS.map(field => ({
-        id: field.id,
-        name: field.name,
-        value: '',
-        type: field.type,
-      }));
+  useEffect(() => {
+    if (currentCharacter && currentCharacter.fields) {
+      setFieldValues(currentCharacter.fields);
+      setCharacterName(currentCharacter.name);
+      setCharacterPhoto(currentCharacter.photo || '');
     }
-    return [];
-  };
+  }, [currentCharacter]);
 
   const handleCreateCharacter = async () => {
-    if (!newCharacterData.name.trim()) return;
-
-    const themeFields = getFieldsForTheme(theme);
-    const allFields = [...themeFields, ...newCharacterData.fields];
-
-    const characterData = {
-      game_id: gameId,
-      name: newCharacterData.name,
-      photo: newCharacterData.photo,
-      theme: theme,
-      fields: allFields,
-    };
-
-    const created = await createCharacter(characterData);
-    if (created) {
-      setIsCreateDialogOpen(false);
-      setNewCharacterData({ name: '', photo: '', fields: [] });
+    if (!characterName.trim()) {
+      toast({
+        title: t('error.title'),
+        description: t('character.nameRequired'),
+        variant: 'destructive',
+      });
+      return;
     }
-  };
 
-  const handleGenerateCharacter = () => {
-    const generated = generateBlankCharacter('Сталкер', theme);
-    const themeFields = getFieldsForTheme(theme);
-    
-    // Заповнюємо базову інформацію
-    setNewCharacterData({
-      name: generated.name,
-      photo: '',
-      fields: [...themeFields, ...generated.fields.map(field => ({
-        id: Date.now().toString() + Math.random(),
-        name: field.name,
-        value: field.value,
-        type: 'text' as const,
-      }))],
-    });
-  };
+    try {
+      const blankCharacter = generateBlankCharacter(theme);
+      const newCharacter = await createCharacter({
+        game_id: gameId,
+        name: characterName,
+        photo: characterPhoto,
+        theme: theme,
+        fields: blankCharacter.fields,
+      });
 
-  const handleAddCustomField = () => {
-    const newField: CharacterField = {
-      id: Date.now().toString() + Math.random(),
-      name: '',
-      value: '',
-      type: 'text',
-    };
-    setNewCharacterData(prev => ({
-      ...prev,
-      fields: [...prev.fields, newField],
-    }));
-  };
-
-  const handleRemoveCustomField = (fieldId: string) => {
-    setNewCharacterData(prev => ({
-      ...prev,
-      fields: prev.fields.filter(field => field.id !== fieldId),
-    }));
-  };
-
-  const handleCustomFieldChange = (fieldId: string, key: keyof CharacterField, value: string) => {
-    setNewCharacterData(prev => ({
-      ...prev,
-      fields: prev.fields.map(field =>
-        field.id === fieldId ? { ...field, [key]: value } : field
-      ),
-    }));
-  };
-
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setNewCharacterData(prev => ({ ...prev, photo: result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUpdateField = async (characterId: string, fieldId: string, value: string) => {
-    const character = characters.find(c => c.id === characterId);
-    if (!character) return;
-
-    const updatedFields = character.fields.map((field: any) =>
-      field.id === fieldId ? { ...field, value } : field
-    );
-
-    await updateCharacter(characterId, { fields: updatedFields });
-  };
-
-  const getAllFields = (character: any): CharacterField[] => {
-    const themeFields = getFieldsForTheme(character.theme || theme);
-    const customFields = character.fields || [];
-    
-    // Об'єднуємо поля теми з збереженими полями
-    const allFields = [...themeFields];
-    
-    // Додаємо кастомні поля, які не є полями теми
-    customFields.forEach((field: any) => {
-      if (!themeFields.find(tf => tf.id === field.id)) {
-        allFields.push(field);
-      } else {
-        // Оновлюємо значення для полів теми
-        const themeField = allFields.find(tf => tf.id === field.id);
-        if (themeField) {
-          themeField.value = field.value;
-        }
+      if (newCharacter) {
+        setSelectedCharacter(newCharacter.id);
+        setShowCreateForm(false);
+        setCharacterName('');
+        setCharacterPhoto('');
+        toast({
+          title: t('success.title'),
+          description: t('character.created'),
+        });
       }
-    });
+    } catch (error) {
+      console.error('Error creating character:', error);
+      toast({
+        title: t('error.title'),
+        description: t('character.createError'),
+        variant: 'destructive',
+      });
+    }
+  };
 
-    return allFields;
+  const handleUpdateField = async (fieldName: string, value: any) => {
+    if (!currentCharacter) return;
+
+    const updatedFields = {
+      ...fieldValues,
+      [fieldName]: value,
+    };
+
+    setFieldValues(updatedFields);
+
+    try {
+      await updateCharacter(currentCharacter.id, {
+        fields: updatedFields,
+      });
+    } catch (error) {
+      console.error('Error updating field:', error);
+      toast({
+        title: t('error.title'),
+        description: t('character.updateError'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleUpdateCharacterInfo = async () => {
+    if (!currentCharacter) return;
+
+    try {
+      await updateCharacter(currentCharacter.id, {
+        name: characterName,
+        photo: characterPhoto,
+      });
+      setIsEditing(false);
+      toast({
+        title: t('success.title'),
+        description: t('character.updated'),
+      });
+    } catch (error) {
+      console.error('Error updating character:', error);
+      toast({
+        title: t('error.title'),
+        description: t('character.updateError'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteCharacter = async () => {
+    if (!currentCharacter) return;
+
+    try {
+      await deleteCharacter(currentCharacter.id);
+      setSelectedCharacter(null);
+      toast({
+        title: t('success.title'),
+        description: t('character.deleted'),
+      });
+    } catch (error) {
+      console.error('Error deleting character:', error);
+      toast({
+        title: t('error.title'),
+        description: t('character.deleteError'),
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const renderField = (field: CharacterField) => {
+    const isCurrentlyEditing = editingField === field.name;
+    const value = fieldValues[field.name] || field.value || '';
+
+    return (
+      <div key={field.name} className="space-y-2">
+        <Label htmlFor={field.name} className="text-sm font-medium">
+          {field.name}
+        </Label>
+        {isCurrentlyEditing ? (
+          <div className="flex gap-2">
+            {field.type === 'textarea' ? (
+              <textarea
+                id={field.name}
+                value={value}
+                onChange={(e) => setFieldValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                className="flex-1 min-h-[100px] p-2 border rounded-md"
+                autoFocus
+              />
+            ) : (
+              <Input
+                id={field.name}
+                type={field.type}
+                value={value}
+                onChange={(e) => setFieldValues(prev => ({ 
+                  ...prev, 
+                  [field.name]: field.type === 'number' ? Number(e.target.value) : e.target.value 
+                }))}
+                className="flex-1"
+                autoFocus
+              />
+            )}
+            <Button
+              size="sm"
+              onClick={() => {
+                handleUpdateField(field.name, fieldValues[field.name]);
+                setEditingField(null);
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEditingField(null);
+                setFieldValues(prev => ({ ...prev, [field.name]: currentCharacter?.fields[field.name] || field.value }));
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <div
+            className="p-2 border rounded-md cursor-pointer hover:bg-gray-50 min-h-[40px] flex items-center"
+            onClick={() => setEditingField(field.name)}
+          >
+            {value || 'Click to edit'}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const getAllFields = (): CharacterField[] => {
+    if (!currentCharacter) return [];
+
+    const blankCharacter = generateBlankCharacter(theme);
+    const baseFields = blankCharacter.fields || [];
+    
+    // Get custom fields from the character's stored fields
+    const customFields = Object.entries(currentCharacter.fields || {})
+      .filter(([key]) => !baseFields.some(field => field.name === key))
+      .map(([key, value]) => ({
+        name: key,
+        value: value,
+        type: 'text' as const,
+        category: 'notes' as const,
+      }));
+
+    return [...baseFields, ...customFields];
+  };
+
+  const getFieldsByCategory = (category: string): CharacterField[] => {
+    return getAllFields().filter(field => field.category === category);
   };
 
   if (loading) {
-    return <div className="p-4 text-center">{t('common.loading')}</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">{t('common.loading')}</div>
+      </div>
+    );
+  }
+
+  if (!currentCharacter && !showCreateForm) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">{t('character.title')}</h2>
+          <Button onClick={() => setShowCreateForm(true)}>
+            {t('character.create')}
+          </Button>
+        </div>
+
+        {characters.length > 0 ? (
+          <div className="grid gap-4">
+            <h3 className="text-lg font-semibold">{t('character.selectExisting')}</h3>
+            <div className="grid gap-2">
+              {characters.map((character) => (
+                <Card
+                  key={character.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedCharacter(character.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {character.photo && (
+                        <img
+                          src={character.photo}
+                          alt={character.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      )}
+                      <div>
+                        <h4 className="font-semibold">{character.name}</h4>
+                        <Badge variant="secondary">{character.theme}</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">{t('character.noCharacters')}</p>
+            <Button onClick={() => setShowCreateForm(true)}>
+              {t('character.createFirst')}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (showCreateForm) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">{t('character.create')}</h2>
+          <Button variant="outline" onClick={() => setShowCreateForm(false)}>
+            {t('common.cancel')}
+          </Button>
+        </div>
+
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div>
+              <Label htmlFor="characterName">{t('character.name')}</Label>
+              <Input
+                id="characterName"
+                value={characterName}
+                onChange={(e) => setCharacterName(e.target.value)}
+                placeholder={t('character.namePlaceholder')}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="characterPhoto">{t('character.photo')}</Label>
+              <Input
+                id="characterPhoto"
+                value={characterPhoto}
+                onChange={(e) => setCharacterPhoto(e.target.value)}
+                placeholder={t('character.photoPlaceholder')}
+              />
+            </div>
+
+            <Button onClick={handleCreateCharacter} className="w-full">
+              {t('character.create')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{t('characters.title')}</h3>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              {t('characters.create')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{t('characters.create')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="characterName">{t('common.name')}</Label>
-                  <Input
-                    id="characterName"
-                    value={newCharacterData.name}
-                    onChange={(e) => setNewCharacterData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder={t('characters.namePlaceholder')}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('characters.photo')}</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                      id="photoUpload"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('photoUpload')?.click()}
-                      className="flex-1"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {t('characters.uploadPhoto')}
-                    </Button>
-                  </div>
-                  {newCharacterData.photo && (
-                    <div className="relative">
-                      <img
-                        src={newCharacterData.photo}
-                        alt="Character"
-                        className="w-full h-32 object-cover rounded border"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setNewCharacterData(prev => ({ ...prev, photo: '' }))}
-                        className="absolute top-1 right-1"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  )}
+        <div className="flex items-center gap-4">
+          {currentCharacter?.photo && (
+            <img
+              src={currentCharacter.photo}
+              alt={currentCharacter.name}
+              className="w-16 h-16 rounded-full object-cover"
+            />
+          )}
+          <div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input
+                  value={characterName}
+                  onChange={(e) => setCharacterName(e.target.value)}
+                  className="text-2xl font-bold"
+                />
+                <Input
+                  value={characterPhoto}
+                  onChange={(e) => setCharacterPhoto(e.target.value)}
+                  placeholder={t('character.photoPlaceholder')}
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleUpdateCharacterInfo}>
+                    {t('common.save')}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
+                    {t('common.cancel')}
+                  </Button>
                 </div>
               </div>
-
-              {/* Поля для теми */}
-              {theme === 'theme-stalker' && (
-                <div className="space-y-4">
-                  <h4 className="font-medium">Поля для теми Сталкер:</h4>
-                  {getFieldsForTheme(theme).map((field) => (
-                    <div key={field.id} className="space-y-2">
-                      <Label>{field.name}</Label>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={field.value}
-                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
-                          placeholder={`Введіть ${field.name.toLowerCase()}`}
-                          className="min-h-[80px]"
-                        />
-                      ) : (
-                        <Input
-                          type={field.type}
-                          value={field.value}
-                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
-                          placeholder={`Введіть ${field.name.toLowerCase()}`}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Кастомні поля */}
-              {newCharacterData.fields.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="font-medium">Додаткові поля:</h4>
-                  {newCharacterData.fields.map((field) => (
-                    <div key={field.id} className="space-y-2 p-3 border rounded">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={field.name}
-                          onChange={(e) => handleCustomFieldChange(field.id, 'name', e.target.value)}
-                          placeholder="Назва поля"
-                          className="flex-1"
-                        />
-                        <Select
-                          value={field.type}
-                          onValueChange={(value: 'text' | 'textarea' | 'number') => 
-                            handleCustomFieldChange(field.id, 'type', value)
-                          }
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Текст</SelectItem>
-                            <SelectItem value="textarea">Великий текст</SelectItem>
-                            <SelectItem value="number">Число</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveCustomField(field.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={field.value}
-                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
-                          placeholder="Значення поля"
-                        />
-                      ) : (
-                        <Input
-                          type={field.type}
-                          value={field.value}
-                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
-                          placeholder="Значення поля"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button type="button" onClick={handleAddCustomField} variant="outline" className="flex-1">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Додати поле
-                </Button>
-                <Button type="button" onClick={handleGenerateCharacter} variant="outline" className="flex-1">
-                  Згенерувати
-                </Button>
+            ) : (
+              <div>
+                <h2 className="text-2xl font-bold">{currentCharacter?.name}</h2>
+                <Badge variant="secondary">{currentCharacter?.theme}</Badge>
               </div>
+            )}
+          </div>
+        </div>
 
-              <Button onClick={handleCreateCharacter} className="w-full">
-                {t('common.create')}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setSelectedCharacter(null)}
+          >
+            {t('character.back')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? t('common.cancel') : t('common.edit')}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteCharacter}
+          >
+            {t('common.delete')}
+          </Button>
+        </div>
       </div>
 
-      {characters.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>{t('characters.noCharacters')}</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {characters.map((character) => (
-            <Card key={character.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{character.name}</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingCharacter(editingCharacter === character.id ? null : character.id)}
-                    >
-                      {editingCharacter === character.id ? 'Завершити' : 'Редагувати'}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteCharacter(character.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+      <Tabs defaultValue="basic" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="basic">{t('character.basic')}</TabsTrigger>
+          <TabsTrigger value="stats">{t('character.stats')}</TabsTrigger>
+          <TabsTrigger value="skills">{t('character.skills')}</TabsTrigger>
+          <TabsTrigger value="equipment">{t('character.equipment')}</TabsTrigger>
+          <TabsTrigger value="notes">{t('character.notes')}</TabsTrigger>
+          <TabsTrigger value="tools">{t('character.tools')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="basic" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('character.basicInfo')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {getFieldsByCategory('basic').map(renderField)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="stats" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('character.statistics')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {getFieldsByCategory('stats').map(renderField)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="skills" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('character.skills')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {getFieldsByCategory('skills').map(renderField)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="equipment" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('character.equipment')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {getFieldsByCategory('equipment').map(renderField)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notes" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('character.notes')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {getFieldsByCategory('notes').map(renderField)}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tools" className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('dice.title')}</CardTitle>
               </CardHeader>
               <CardContent>
-                {character.photo && (
-                  <div className="mb-4">
-                    <img
-                      src={character.photo}
-                      alt={character.name}
-                      className="w-full max-w-xs h-48 object-cover rounded border mx-auto"
-                    />
-                  </div>
-                )}
-                <div className="grid gap-4">
-                  {getAllFields(character).map((field) => (
-                    <div key={field.id} className="space-y-2">
-                      <Label className="font-medium">{field.name}</Label>
-                      {editingCharacter === character.id ? (
-                        field.type === 'textarea' ? (
-                          <Textarea
-                            value={field.value}
-                            onChange={(e) => handleUpdateField(character.id, field.id, e.target.value)}
-                            className="min-h-[80px]"
-                          />
-                        ) : (
-                          <Input
-                            type={field.type}
-                            value={field.value}
-                            onChange={(e) => handleUpdateField(character.id, field.id, e.target.value)}
-                          />
-                        )
-                      ) : (
-                        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                          {field.value || 'Не заповнено'}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <DiceRoller />
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('combat.title')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CombatSystem />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

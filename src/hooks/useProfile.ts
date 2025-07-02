@@ -31,7 +31,7 @@ export interface GameInvitation {
   inviter_profile?: {
     username: string | null;
     email: string | null;
-  };
+  } | null;
 }
 
 export const useProfile = () => {
@@ -93,22 +93,28 @@ export const useProfile = () => {
 
       // Then, get the inviter profiles separately
       const inviterIds = invitationsData?.map(inv => inv.invited_by) || [];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, email')
-        .in('id', inviterIds);
+      
+      let profilesData: any[] = [];
+      if (inviterIds.length > 0) {
+        const { data, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, email')
+          .in('id', inviterIds);
 
-      if (profilesError) {
-        console.error('Error fetching inviter profiles:', profilesError);
+        if (profilesError) {
+          console.error('Error fetching inviter profiles:', profilesError);
+        } else {
+          profilesData = data || [];
+        }
       }
 
       // Combine the data
-      const transformedData = invitationsData?.map(invitation => ({
+      const transformedData: GameInvitation[] = invitationsData?.map(invitation => ({
         ...invitation,
-        inviter_profile: profilesData?.find(profile => profile.id === invitation.invited_by) || null,
-      })) as GameInvitation[];
+        inviter_profile: profilesData.find(profile => profile.id === invitation.invited_by) || null,
+      })) || [];
 
-      setInvitations(transformedData || []);
+      setInvitations(transformedData);
     } catch (error) {
       console.error('Error fetching invitations:', error);
     } finally {

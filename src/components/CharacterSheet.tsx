@@ -1,17 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
+import { useCharacters } from '@/hooks/useCharacters';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCharacters } from '@/hooks/useCharacters';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Plus, Save, Trash2, Users, Shield, Sword, Backpack, FileText, Dice6 } from 'lucide-react';
+import { CharacterFieldsData } from '@/types/character';
+import { getCharacterFieldsTemplate } from '@/utils/characterGenerator';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
-import DiceRoller from '@/components/DiceRoller';
-import CombatSystem from '@/components/CombatSystem';
-import { generateRandomCharacter, getCharacterFieldsTemplate } from '@/utils/characterGenerator';
-import { CharacterField, CharacterFieldsData } from '@/types/character';
 
 interface CharacterSheetProps {
   gameId: string;
@@ -19,37 +21,45 @@ interface CharacterSheetProps {
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
-  const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
+  const { characters, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
+  const { t } = useLanguage();
+  const { toast } = useToast();
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [fieldValues, setFieldValues] = useState<CharacterFieldsData>({});
+  const [editingFields, setEditingFields] = useState<CharacterFieldsData>({});
   const [characterName, setCharacterName] = useState('');
-  const [characterPhoto, setCharacterPhoto] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const { toast } = useToast();
-  const { t } = useLanguage();
 
-  const currentCharacter = characters.find(char => char.id === selectedCharacter);
+  const currentCharacter = characters.find(c => c.id === selectedCharacter);
 
+  // Get field template based on theme
+  const fieldTemplate = getCharacterFieldsTemplate(theme);
+
+  // Initialize editing fields when character is selected
   useEffect(() => {
-    if (currentCharacter && currentCharacter.fields) {
-      // Safely convert Json to CharacterFieldsData
-      const safeFields: CharacterFieldsData = 
-        (currentCharacter.fields && typeof currentCharacter.fields === 'object' && !Array.isArray(currentCharacter.fields))
-          ? (currentCharacter.fields as CharacterFieldsData)
-          : {};
-      
-      setFieldValues(safeFields);
+    if (currentCharacter) {
       setCharacterName(currentCharacter.name);
-      setCharacterPhoto(currentCharacter.photo || '');
+      
+      // Safely parse character fields
+      let characterFields: CharacterFieldsData = {};
+      if (currentCharacter.fields) {
+        if (typeof currentCharacter.fields === 'object' && !Array.isArray(currentCharacter.fields)) {
+          characterFields = currentCharacter.fields as CharacterFieldsData;
+        }
+      }
+
+      // Merge with template to ensure all fields exist
+      const mergedFields = { ...fieldTemplate, ...characterFields };
+      setEditingFields(mergedFields);
+    } else {
+      setEditingFields(fieldTemplate);
+      setCharacterName('');
     }
-  }, [currentCharacter]);
+  }, [currentCharacter, fieldTemplate]);
 
   const handleCreateCharacter = async () => {
     if (!characterName.trim()) {
       toast({
-        title: t('error.title'),
+        title: t('character.error'),
         description: t('character.nameRequired'),
         variant: 'destructive',
       });
@@ -57,448 +67,302 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     }
 
     try {
-      const blankCharacter = generateRandomCharacter(theme, true);
-      const newCharacter = await createCharacter({
-        game_id: gameId,
+      await createCharacter({
         name: characterName,
-        photo: characterPhoto,
-        theme: theme,
-        fields: blankCharacter.fields,
+        fields: editingFields,
+        theme,
       });
-
-      if (newCharacter) {
-        setSelectedCharacter(newCharacter.id);
-        setShowCreateForm(false);
-        setCharacterName('');
-        setCharacterPhoto('');
-        toast({
-          title: t('success.title'),
-          description: t('character.created'),
-        });
-      }
-    } catch (error) {
-      console.error('Error creating character:', error);
+      
       toast({
-        title: t('error.title'),
+        title: t('character.success'),
+        description: t('character.created'),
+      });
+      
+      setCharacterName('');
+      setEditingFields(fieldTemplate);
+      setIsEditing(false);
+    } catch (error) {
+      toast({
+        title: t('character.error'),
         description: t('character.createError'),
         variant: 'destructive',
       });
     }
   };
 
-  const handleUpdateField = async (fieldName: string, value: any) => {
-    if (!currentCharacter) return;
-
-    const updatedFields = {
-      ...fieldValues,
-      [fieldName]: value,
-    };
-
-    setFieldValues(updatedFields);
+  const handleUpdateCharacter = async () => {
+    if (!selectedCharacter || !characterName.trim()) return;
 
     try {
-      await updateCharacter(currentCharacter.id, {
-        fields: updatedFields,
-      });
-    } catch (error) {
-      console.error('Error updating field:', error);
-      toast({
-        title: t('error.title'),
-        description: t('character.updateError'),
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleUpdateCharacterInfo = async () => {
-    if (!currentCharacter) return;
-
-    try {
-      await updateCharacter(currentCharacter.id, {
+      await updateCharacter(selectedCharacter, {
         name: characterName,
-        photo: characterPhoto,
+        fields: editingFields,
       });
-      setIsEditing(false);
+      
       toast({
-        title: t('success.title'),
+        title: t('character.success'),
         description: t('character.updated'),
       });
+      
+      setIsEditing(false);
     } catch (error) {
-      console.error('Error updating character:', error);
       toast({
-        title: t('error.title'),
+        title: t('character.error'),
         description: t('character.updateError'),
         variant: 'destructive',
       });
     }
   };
 
-  const handleDeleteCharacter = async () => {
-    if (!currentCharacter) return;
-
+  const handleDeleteCharacter = async (characterId: string) => {
     try {
-      await deleteCharacter(currentCharacter.id);
-      setSelectedCharacter(null);
+      await deleteCharacter(characterId);
       toast({
-        title: t('success.title'),
+        title: t('character.success'),
         description: t('character.deleted'),
       });
+      
+      if (selectedCharacter === characterId) {
+        setSelectedCharacter(null);
+        setIsEditing(false);
+      }
     } catch (error) {
-      console.error('Error deleting character:', error);
       toast({
-        title: t('error.title'),
+        title: t('character.error'),
         description: t('character.deleteError'),
         variant: 'destructive',
       });
     }
   };
 
-  const renderField = (field: CharacterField) => {
-    const isCurrentlyEditing = editingField === field.name;
-    const value = fieldValues[field.name] || field.value || '';
+  const handleFieldChange = (fieldName: string, value: string | number) => {
+    setEditingFields(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+  };
+
+  const getFieldsByCategory = (category: string) => {
+    return Object.entries(fieldTemplate).filter(([_, field]) => 
+      typeof field === 'object' && field.category === category
+    );
+  };
+
+  const renderField = (fieldName: string, fieldValue: any) => {
+    const fieldConfig = fieldTemplate[fieldName];
+    if (!fieldConfig || typeof fieldConfig !== 'object') return null;
+
+    const currentValue = editingFields[fieldName] || '';
 
     return (
-      <div key={field.name} className="space-y-2">
-        <Label htmlFor={field.name} className="text-sm font-medium">
-          {field.name}
+      <div key={fieldName} className="space-y-2">
+        <Label htmlFor={fieldName} className="text-sm font-medium">
+          {fieldConfig.label || fieldName}
         </Label>
-        {isCurrentlyEditing ? (
-          <div className="flex gap-2">
-            {field.type === 'textarea' ? (
-              <textarea
-                id={field.name}
-                value={value}
-                onChange={(e) => setFieldValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                className="flex-1 min-h-[100px] p-2 border rounded-md"
-                autoFocus
-              />
-            ) : (
-              <Input
-                id={field.name}
-                type={field.type}
-                value={value}
-                onChange={(e) => setFieldValues(prev => ({ 
-                  ...prev, 
-                  [field.name]: field.type === 'number' ? Number(e.target.value) : e.target.value 
-                }))}
-                className="flex-1"
-                autoFocus
-              />
-            )}
-            <Button
-              size="sm"
-              onClick={() => {
-                handleUpdateField(field.name, fieldValues[field.name]);
-                setEditingField(null);
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setEditingField(null);
-                setFieldValues(prev => ({ ...prev, [field.name]: currentCharacter?.fields[field.name] || field.value }));
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
+        {fieldConfig.type === 'textarea' ? (
+          <Textarea
+            id={fieldName}
+            value={currentValue}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            disabled={!isEditing}
+            className="min-h-[100px] resize-none"
+            placeholder={fieldConfig.placeholder || ''}
+          />
+        ) : fieldConfig.type === 'number' ? (
+          <Input
+            id={fieldName}
+            type="number"
+            value={currentValue}
+            onChange={(e) => handleFieldChange(fieldName, parseInt(e.target.value) || 0)}
+            disabled={!isEditing}
+            placeholder={fieldConfig.placeholder || '0'}
+          />
         ) : (
-          <div
-            className="p-2 border rounded-md cursor-pointer hover:bg-gray-50 min-h-[40px] flex items-center"
-            onClick={() => setEditingField(field.name)}
-          >
-            {value || 'Click to edit'}
-          </div>
+          <Input
+            id={fieldName}
+            type="text"
+            value={currentValue}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            disabled={!isEditing}
+            placeholder={fieldConfig.placeholder || ''}
+          />
         )}
       </div>
     );
   };
 
-  const getAllFields = (): CharacterField[] => {
-    if (!currentCharacter) return [];
-
-    // Get the template fields for this theme
-    const templateFields = getCharacterFieldsTemplate(theme);
-    
-    // Safely convert character fields to CharacterFieldsData
-    const characterFields = currentCharacter.fields;
-    const safeCharacterFields: CharacterFieldsData = 
-      (characterFields && typeof characterFields === 'object' && !Array.isArray(characterFields)) 
-        ? (characterFields as CharacterFieldsData)
-        : {};
-    
-    // Get custom fields from the character's stored fields that aren't in the template
-    const templateFieldNames = new Set(templateFields.map(field => field.name));
-    const customFields = Object.entries(safeCharacterFields)
-      .filter(([key]) => !templateFieldNames.has(key))
-      .map(([key, value]) => ({
-        name: key,
-        value: value,
-        type: 'text' as const,
-        category: 'notes' as const,
-      }));
-
-    return [...templateFields, ...customFields];
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'basic': return <Users className="w-4 h-4" />;
+      case 'stats': return <Shield className="w-4 h-4" />;
+      case 'skills': return <Sword className="w-4 h-4" />;
+      case 'equipment': return <Backpack className="w-4 h-4" />;
+      case 'notes': return <FileText className="w-4 h-4" />;
+      default: return <Dice6 className="w-4 h-4" />;
+    }
   };
-
-  const getFieldsByCategory = (category: string): CharacterField[] => {
-    return getAllFields().filter(field => field.category === category);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">{t('common.loading')}</div>
-      </div>
-    );
-  }
-
-  if (!currentCharacter && !showCreateForm) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{t('character.title')}</h2>
-          <Button onClick={() => setShowCreateForm(true)}>
-            {t('character.create')}
-          </Button>
-        </div>
-
-        {characters.length > 0 ? (
-          <div className="grid gap-4">
-            <h3 className="text-lg font-semibold">{t('character.selectExisting')}</h3>
-            <div className="grid gap-2">
-              {characters.map((character) => (
-                <Card
-                  key={character.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedCharacter(character.id)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      {character.photo && (
-                        <img
-                          src={character.photo}
-                          alt={character.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      )}
-                      <div>
-                        <h4 className="font-semibold">{character.name}</h4>
-                        <Badge variant="secondary">{character.theme}</Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">{t('character.noCharacters')}</p>
-            <Button onClick={() => setShowCreateForm(true)}>
-              {t('character.createFirst')}
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (showCreateForm) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{t('character.create')}</h2>
-          <Button variant="outline" onClick={() => setShowCreateForm(false)}>
-            {t('common.cancel')}
-          </Button>
-        </div>
-
-        <Card>
-          <CardContent className="p-6 space-y-4">
-            <div>
-              <Label htmlFor="characterName">{t('character.name')}</Label>
-              <Input
-                id="characterName"
-                value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
-                placeholder={t('character.namePlaceholder')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="characterPhoto">{t('character.photo')}</Label>
-              <Input
-                id="characterPhoto"
-                value={characterPhoto}
-                onChange={(e) => setCharacterPhoto(e.target.value)}
-                placeholder={t('character.photoPlaceholder')}
-              />
-            </div>
-
-            <Button onClick={handleCreateCharacter} className="w-full">
-              {t('character.create')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {currentCharacter?.photo && (
-            <img
-              src={currentCharacter.photo}
-              alt={currentCharacter.name}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          )}
-          <div>
-            {isEditing ? (
-              <div className="space-y-2">
-                <Input
-                  value={characterName}
-                  onChange={(e) => setCharacterName(e.target.value)}
-                  className="text-2xl font-bold"
-                />
-                <Input
-                  value={characterPhoto}
-                  onChange={(e) => setCharacterPhoto(e.target.value)}
-                  placeholder={t('character.photoPlaceholder')}
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleUpdateCharacterInfo}>
-                    {t('common.save')}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
-                    {t('common.cancel')}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-2xl font-bold">{currentCharacter?.name}</h2>
-                <Badge variant="secondary">{currentCharacter?.theme}</Badge>
-              </div>
-            )}
-          </div>
+          <h2 className="text-2xl font-bold">{t('character.title')}</h2>
+          <Badge variant="outline" className="capitalize">
+            {theme?.replace('theme-', '') || 'fantasy'}
+          </Badge>
         </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setSelectedCharacter(null)}
-          >
-            {t('character.back')}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            {isEditing ? t('common.cancel') : t('common.edit')}
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDeleteCharacter}
-          >
-            {t('common.delete')}
-          </Button>
+        
+        <div className="flex items-center gap-2">
+          {!selectedCharacter && (
+            <Button onClick={handleCreateCharacter} className="gap-2">
+              <Plus className="w-4 h-4" />
+              {t('character.create')}
+            </Button>
+          )}
+          
+          {selectedCharacter && (
+            <>
+              {isEditing ? (
+                <Button onClick={handleUpdateCharacter} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  {t('character.save')}
+                </Button>
+              ) : (
+                <Button onClick={() => setIsEditing(true)} variant="outline">
+                  {t('character.edit')}
+                </Button>
+              )}
+              
+              <Button
+                onClick={() => handleDeleteCharacter(selectedCharacter)}
+                variant="destructive"
+                size="sm"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="basic">{t('character.basic')}</TabsTrigger>
-          <TabsTrigger value="stats">{t('character.stats')}</TabsTrigger>
-          <TabsTrigger value="skills">{t('character.skills')}</TabsTrigger>
-          <TabsTrigger value="equipment">{t('character.equipment')}</TabsTrigger>
-          <TabsTrigger value="notes">{t('character.notes')}</TabsTrigger>
-          <TabsTrigger value="tools">{t('character.tools')}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="basic" className="space-y-4">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Characters List */}
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>{t('character.basicInfo')}</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                {t('character.characters')}
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {getFieldsByCategory('basic').map(renderField)}
+            <CardContent className="space-y-2">
+              {characters.map((character) => (
+                <div
+                  key={character.id}
+                  onClick={() => {
+                    setSelectedCharacter(character.id);
+                    setIsEditing(false);
+                  }}
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedCharacter === character.id
+                      ? 'bg-accent border-accent-foreground/20'
+                      : 'hover:bg-muted/50'
+                  }`}
+                >
+                  <div className="font-medium">{character.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(character.updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+              
+              {characters.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>{t('character.noCharacters')}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="stats" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('character.statistics')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {getFieldsByCategory('stats').map(renderField)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="skills" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('character.skills')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {getFieldsByCategory('skills').map(renderField)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="equipment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('character.equipment')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {getFieldsByCategory('equipment').map(renderField)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notes" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('character.notes')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {getFieldsByCategory('notes').map(renderField)}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tools" className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+        {/* Character Details */}
+        <div className="lg:col-span-3">
+          {selectedCharacter || isEditing ? (
+            <Card className="h-full">
               <CardHeader>
-                <CardTitle>{t('dice.title')}</CardTitle>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">
+                      {selectedCharacter ? currentCharacter?.name : t('character.newCharacter')}
+                    </CardTitle>
+                  </div>
+                  
+                  {(isEditing || !selectedCharacter) && (
+                    <div className="space-y-2">
+                      <Label htmlFor="characterName">{t('character.name')}</Label>
+                      <Input
+                        id="characterName"
+                        value={characterName}
+                        onChange={(e) => setCharacterName(e.target.value)}
+                        placeholder={t('character.enterName')}
+                      />
+                    </div>
+                  )}
+                </div>
               </CardHeader>
+              
               <CardContent>
-                <DiceRoller />
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="basic" className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      {t('character.basic')}
+                    </TabsTrigger>
+                    <TabsTrigger value="stats" className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      {t('character.stats')}
+                    </TabsTrigger>
+                    <TabsTrigger value="skills" className="flex items-center gap-2">
+                      <Sword className="w-4 h-4" />
+                      {t('character.skills')}
+                    </TabsTrigger>
+                    <TabsTrigger value="equipment" className="flex items-center gap-2">
+                      <Backpack className="w-4 h-4" />
+                      {t('character.equipment')}
+                    </TabsTrigger>
+                    <TabsTrigger value="notes" className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      {t('character.notes')}
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {['basic', 'stats', 'skills', 'equipment', 'notes'].map((category) => (
+                    <TabsContent key={category} value={category} className="mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {getFieldsByCategory(category).map(([fieldName, fieldValue]) =>
+                          renderField(fieldName, fieldValue)
+                        )}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('combat.title')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CombatSystem />
+          ) : (
+            <Card className="h-full">
+              <CardContent className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">{t('character.selectCharacter')}</h3>
+                  <p className="text-muted-foreground">{t('character.selectCharacterDescription')}</p>
+                </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

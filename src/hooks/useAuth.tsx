@@ -75,16 +75,6 @@ export const useAuth = () => {
     try {
       setLoading(true);
       
-      // Check if email already exists by trying to get user data
-      const { data: existingUsers, error: checkError } = await supabase
-        .from('auth.users')
-        .select('email')
-        .eq('email', email)
-        .limit(1);
-
-      // If we can't check (which is expected since auth.users is protected), 
-      // we'll rely on Supabase's built-in duplicate handling
-      
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -98,10 +88,7 @@ export const useAuth = () => {
 
       if (error) {
         // Handle specific Supabase errors
-        if (error.message.includes('already registered')) {
-          throw new Error(t('error.emailExists'));
-        }
-        if (error.message.includes('User already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           throw new Error(t('error.emailExists'));
         }
         throw error;

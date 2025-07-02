@@ -1,498 +1,435 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, User, X } from 'lucide-react';
+import { Plus, Trash2, Upload, Camera, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useCharacters, Character } from '@/hooks/useCharacters';
+import { useCharacters } from '@/hooks/useCharacters';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { generateRandomCharacter } from '@/utils/characterGenerator';
+import { useAuth } from '@/hooks/useAuth';
+import { generateCharacter } from '@/utils/characterGenerator';
+
+interface CharacterField {
+  id: string;
+  name: string;
+  value: string;
+  type: 'text' | 'textarea' | 'number';
+}
 
 interface CharacterSheetProps {
-  currentGameId: string;
+  gameId: string;
+  theme: string;
 }
 
-interface CustomField {
-  name: string;
-  type: 'text' | 'textarea';
-  value: string;
-}
+// Поля для теми Сталкер
+const STALKER_FIELDS = [
+  { id: 'visual_description', name: 'Візуальний опис', type: 'textarea' as const },
+  { id: 'special_feature', name: 'Особлива прикмета', type: 'textarea' as const },
+  { id: 'background', name: 'Минуле та характер', type: 'textarea' as const },
+  { id: 'habits', name: 'Звички та захоплення', type: 'textarea' as const },
+  { id: 'strength', name: 'Сила', type: 'number' as const },
+  { id: 'agility', name: 'Спритність', type: 'number' as const },
+  { id: 'perception', name: 'Сприйняття', type: 'number' as const },
+  { id: 'charisma', name: 'Харизма', type: 'number' as const },
+  { id: 'intelligence', name: 'Інтелект', type: 'number' as const },
+  { id: 'health_points', name: 'Очки Здоров\'я (ОЗ)', type: 'number' as const },
+  { id: 'armor_class', name: 'Клас Броні (КБ)', type: 'number' as const },
+  { id: 'survival', name: 'Виживання', type: 'text' as const },
+  { id: 'search_hidden', name: 'Пошук прихованого', type: 'text' as const },
+  { id: 'knowledge', name: 'Знання', type: 'text' as const },
+  { id: 'athletics', name: 'Атлетизм', type: 'text' as const },
+  { id: 'endurance', name: 'Витривалість', type: 'text' as const },
+  { id: 'positive_perk', name: 'Позитивний перк', type: 'textarea' as const },
+  { id: 'negative_perk', name: 'Негативний перк', type: 'textarea' as const },
+  { id: 'clothing', name: 'Одяг', type: 'textarea' as const },
+  { id: 'equipment', name: 'Спорядження', type: 'textarea' as const },
+  { id: 'food', name: 'Їжа', type: 'textarea' as const },
+  { id: 'documents_money', name: 'Документи та гроші', type: 'textarea' as const },
+];
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
-  const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(currentGameId);
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
+  const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
   const { t } = useLanguage();
-  
+  const { user } = useAuth();
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  
+  const [editingCharacter, setEditingCharacter] = useState<string | null>(null);
   const [newCharacterData, setNewCharacterData] = useState({
     name: '',
     photo: '',
-    fields: {} as Record<string, any>
+    fields: [] as CharacterField[],
   });
 
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [characterType, setCharacterType] = useState<'random' | 'blank-themed' | 'blank-empty'>('random');
-  const [selectedTheme, setSelectedTheme] = useState<string>('theme-fantasy');
-
-  // Оновити форму при зміні типу персонажа
-  useEffect(() => {
-    if (characterType === 'random') {
-      const randomChar = generateRandomCharacter(selectedTheme, false);
-      setNewCharacterData({
-        name: randomChar.name,
-        photo: '',
-        fields: randomChar.fields
-      });
-      setCustomFields([]);
-    } else if (characterType === 'blank-themed') {
-      const emptyChar = generateRandomCharacter(selectedTheme, true);
-      setNewCharacterData({
-        name: '',
-        photo: '',
-        fields: emptyChar.fields
-      });
-      setCustomFields([]);
-    } else {
-      setNewCharacterData({
-        name: '',
-        photo: '',
-        fields: {}
-      });
-      setCustomFields([]);
+  // Генерація полів для різних тем
+  const getFieldsForTheme = (selectedTheme: string): CharacterField[] => {
+    if (selectedTheme === 'theme-stalker') {
+      return STALKER_FIELDS.map(field => ({
+        id: field.id,
+        name: field.name,
+        value: '',
+        type: field.type,
+      }));
     }
-  }, [characterType, selectedTheme]);
-
-  const addCustomField = () => {
-    setCustomFields(prev => [...prev, { name: '', type: 'text', value: '' }]);
-  };
-
-  const updateCustomField = (index: number, field: Partial<CustomField>) => {
-    setCustomFields(prev => prev.map((f, i) => i === index ? { ...f, ...field } : f));
-  };
-
-  const removeCustomField = (index: number) => {
-    setCustomFields(prev => prev.filter((_, i) => i !== index));
+    return [];
   };
 
   const handleCreateCharacter = async () => {
-    if (!newCharacterData.name.trim() && characterType !== 'blank-empty') return;
+    if (!newCharacterData.name.trim()) return;
 
-    // Combine generated fields with custom fields
-    const allFields = { ...newCharacterData.fields };
-    customFields.forEach(field => {
-      if (field.name.trim()) {
-        allFields[field.name] = field.value;
-      }
-    });
+    const themeFields = getFieldsForTheme(theme);
+    const allFields = [...themeFields, ...newCharacterData.fields];
 
     const characterData = {
-      game_id: currentGameId,
-      name: newCharacterData.name || 'Новий персонаж',
+      name: newCharacterData.name,
       photo: newCharacterData.photo,
-      theme: selectedTheme,
-      fields: allFields
+      theme: theme,
+      fields: allFields,
     };
 
     const created = await createCharacter(characterData);
     if (created) {
       setIsCreateDialogOpen(false);
-      resetForm();
+      setNewCharacterData({ name: '', photo: '', fields: [] });
     }
   };
 
-  const handleUpdateCharacter = async () => {
-    if (!editingCharacter) return;
-
-    const updated = await updateCharacter(editingCharacter.id, {
-      name: editingCharacter.name,
-      photo: editingCharacter.photo,
-      fields: editingCharacter.fields
-    });
-
-    if (updated) {
-      setEditingCharacter(null);
-      if (selectedCharacter?.id === editingCharacter.id) {
-        setSelectedCharacter(updated);
-      }
-    }
-  };
-
-  const resetForm = () => {
+  const handleGenerateCharacter = () => {
+    const generated = generateCharacter(theme);
+    const themeFields = getFieldsForTheme(theme);
+    
+    // Заповнюємо базову інформацію
     setNewCharacterData({
-      name: '',
+      name: generated.name,
       photo: '',
-      fields: {}
+      fields: [...themeFields, ...generated.fields.map(field => ({
+        id: Date.now().toString() + Math.random(),
+        name: field.name,
+        value: field.value,
+        type: 'text' as const,
+      }))],
     });
-    setCustomFields([]);
-    setCharacterType('random');
-    setSelectedTheme('theme-fantasy');
   };
 
-  const renderField = (key: string, value: any, isEditing: boolean = false) => {
-    const character = isEditing ? editingCharacter : selectedCharacter;
-    if (!character) return null;
+  const handleAddCustomField = () => {
+    const newField: CharacterField = {
+      id: Date.now().toString() + Math.random(),
+      name: '',
+      value: '',
+      type: 'text',
+    };
+    setNewCharacterData(prev => ({
+      ...prev,
+      fields: [...prev.fields, newField],
+    }));
+  };
 
-    const isTextarea = key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies') || key.includes('історія') || key.includes('опис');
+  const handleRemoveCustomField = (fieldId: string) => {
+    setNewCharacterData(prev => ({
+      ...prev,
+      fields: prev.fields.filter(field => field.id !== fieldId),
+    }));
+  };
 
-    if (isEditing) {
-      return isTextarea ? (
-        <Textarea
-          value={value || ''}
-          onChange={(e) => setEditingCharacter({
-            ...character,
-            fields: { ...character.fields, [key]: e.target.value }
-          })}
-          placeholder={key}
-          className="w-full"
-        />
-      ) : (
-        <Input
-          value={value || ''}
-          onChange={(e) => setEditingCharacter({
-            ...character,
-            fields: { ...character.fields, [key]: e.target.value }
-          })}
-          placeholder={key}
-          className="w-full"
-        />
-      );
+  const handleCustomFieldChange = (fieldId: string, key: keyof CharacterField, value: string) => {
+    setNewCharacterData(prev => ({
+      ...prev,
+      fields: prev.fields.map(field =>
+        field.id === fieldId ? { ...field, [key]: value } : field
+      ),
+    }));
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setNewCharacterData(prev => ({ ...prev, photo: result }));
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
-    return isTextarea ? (
-      <Textarea
-        value={value || ''}
-        readOnly
-        className="w-full"
-      />
-    ) : (
-      <Input
-        value={value || ''}
-        readOnly
-        className="w-full"
-      />
+  const handleUpdateField = async (characterId: string, fieldId: string, value: string) => {
+    const character = characters.find(c => c.id === characterId);
+    if (!character) return;
+
+    const updatedFields = character.fields.map((field: any) =>
+      field.id === fieldId ? { ...field, value } : field
     );
+
+    await updateCharacter(characterId, { fields: updatedFields });
+  };
+
+  const getAllFields = (character: any): CharacterField[] => {
+    const themeFields = getFieldsForTheme(character.theme || theme);
+    const customFields = character.fields || [];
+    
+    // Об'єднуємо поля теми з збереженими полями
+    const allFields = [...themeFields];
+    
+    // Додаємо кастомні поля, які не є полями теми
+    customFields.forEach((field: any) => {
+      if (!themeFields.find(tf => tf.id === field.id)) {
+        allFields.push(field);
+      } else {
+        // Оновлюємо значення для полів теми
+        const themeField = allFields.find(tf => tf.id === field.id);
+        if (themeField) {
+          themeField.value = field.value;
+        }
+      }
+    });
+
+    return allFields;
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Завантаження...</div>;
+    return <div className="p-4 text-center">{t('common.loading')}</div>;
   }
 
   return (
     <div className="space-y-4">
-      {/* Список персонажів */}
-      <Card className="border border-border/20">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Персонажі</CardTitle>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" onClick={resetForm}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Створити персонажа
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Створення персонажа</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6">
-                  {/* Тип персонажа */}
-                  <div className="space-y-4">
-                    <Label>Тип персонажа</Label>
-                    <Select value={characterType} onValueChange={(value: any) => setCharacterType(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="random">Випадковий персонаж</SelectItem>
-                        <SelectItem value="blank-themed">Пустий персонаж з полями теми</SelectItem>
-                        <SelectItem value="blank-empty">Повністю пустий персонаж</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Тема */}
-                  {characterType !== 'blank-empty' && (
-                    <div className="space-y-4">
-                      <Label>Тема</Label>
-                      <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="theme-fantasy">Фентезі</SelectItem>
-                          <SelectItem value="theme-cyberpunk">Кіберпанк</SelectItem>
-                          <SelectItem value="theme-stalker">Сталкер</SelectItem>
-                          <SelectItem value="theme-scifi">Наукова фантастика</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Базові поля */}
-                  <div className="space-y-4">
-                    <Label htmlFor="characterName">Ім'я персонажа</Label>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">{t('characters.title')}</h3>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              {t('characters.create')}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{t('characters.create')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="characterName">{t('common.name')}</Label>
+                  <Input
+                    id="characterName"
+                    value={newCharacterData.name}
+                    onChange={(e) => setNewCharacterData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder={t('characters.namePlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('characters.photo')}</Label>
+                  <div className="flex gap-2">
                     <Input
-                      id="characterName"
-                      value={newCharacterData.name}
-                      onChange={(e) => setNewCharacterData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Введіть ім'я персонажа"
-                      className="w-full"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      id="photoUpload"
                     />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('photoUpload')?.click()}
+                      className="flex-1"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {t('characters.uploadPhoto')}
+                    </Button>
                   </div>
-
-                  {/* Кастомні поля */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label>Додаткові поля</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addCustomField}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Додати поле
+                  {newCharacterData.photo && (
+                    <div className="relative">
+                      <img
+                        src={newCharacterData.photo}
+                        alt="Character"
+                        className="w-full h-32 object-cover rounded border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setNewCharacterData(prev => ({ ...prev, photo: '' }))}
+                        className="absolute top-1 right-1"
+                      >
+                        <X className="w-3 h-3" />
                       </Button>
                     </div>
-                    
-                    {customFields.map((field, index) => (
-                      <div key={index} className="flex gap-2 items-end">
-                        <div className="flex-1">
-                          <Label className="text-xs">Назва поля</Label>
-                          <Input
-                            value={field.name}
-                            onChange={(e) => updateCustomField(index, { name: e.target.value })}
-                            placeholder="Назва поля"
-                            className="w-full"
-                          />
-                        </div>
-                        <div className="w-32">
-                          <Label className="text-xs">Тип</Label>
-                          <Select value={field.type} onValueChange={(value: 'text' | 'textarea') => updateCustomField(index, { type: value })}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="text">Текст</SelectItem>
-                              <SelectItem value="textarea">Текстова область</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex-1">
-                          <Label className="text-xs">Значення</Label>
-                          {field.type === 'textarea' ? (
-                            <Textarea
-                              value={field.value}
-                              onChange={(e) => updateCustomField(index, { value: e.target.value })}
-                              placeholder="Значення"
-                              className="w-full"
-                            />
-                          ) : (
-                            <Input
-                              value={field.value}
-                              onChange={(e) => updateCustomField(index, { value: e.target.value })}
-                              placeholder="Значення"
-                              className="w-full"
-                            />
-                          )}
-                        </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Поля для теми */}
+              {theme === 'theme-stalker' && (
+                <div className="space-y-4">
+                  <h4 className="font-medium">Поля для теми Сталкер:</h4>
+                  {getFieldsForTheme(theme).map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <Label>{field.name}</Label>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={field.value}
+                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
+                          placeholder={`Введіть ${field.name.toLowerCase()}`}
+                          className="min-h-[80px]"
+                        />
+                      ) : (
+                        <Input
+                          type={field.type}
+                          value={field.value}
+                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
+                          placeholder={`Введіть ${field.name.toLowerCase()}`}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Кастомні поля */}
+              {newCharacterData.fields.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="font-medium">Додаткові поля:</h4>
+                  {newCharacterData.fields.map((field) => (
+                    <div key={field.id} className="space-y-2 p-3 border rounded">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={field.name}
+                          onChange={(e) => handleCustomFieldChange(field.id, 'name', e.target.value)}
+                          placeholder="Назва поля"
+                          className="flex-1"
+                        />
+                        <Select
+                          value={field.type}
+                          onValueChange={(value: 'text' | 'textarea' | 'number') => 
+                            handleCustomFieldChange(field.id, 'type', value)
+                          }
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="text">Текст</SelectItem>
+                            <SelectItem value="textarea">Великий текст</SelectItem>
+                            <SelectItem value="number">Число</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="destructive"
                           size="sm"
-                          onClick={() => removeCustomField(index)}
-                          className="h-10 w-10 p-0"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Поля персонажа */}
-                  {Object.keys(newCharacterData.fields).length > 0 && (
-                    <div className="space-y-4">
-                      <Label>Поля персонажа</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(newCharacterData.fields).map(([key, value]) => (
-                          <div key={key} className="space-y-2">
-                            <Label className="text-sm font-medium">{key}</Label>
-                            {key.includes('ability') || key.includes('description') || key.includes('background') || key.includes('traits') || key.includes('hobbies') || key.includes('історія') || key.includes('опис') ? (
-                              <Textarea
-                                value={value || ''}
-                                onChange={(e) => setNewCharacterData(prev => ({
-                                  ...prev,
-                                  fields: { ...prev.fields, [key]: e.target.value }
-                                }))}
-                                placeholder={key}
-                                className="w-full"
-                              />
-                            ) : (
-                              <Input
-                                value={value || ''}
-                                onChange={(e) => setNewCharacterData(prev => ({
-                                  ...prev,
-                                  fields: { ...prev.fields, [key]: e.target.value }
-                                }))}
-                                placeholder={key}
-                                className="w-full"
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <Button onClick={handleCreateCharacter} className="w-full">
-                    Створити персонажа
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {characters.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Немає персонажів. Створіть свого першого персонажа!
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {characters.map(character => (
-                <Card key={character.id} className="cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => setSelectedCharacter(character)}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                        {character.photo ? (
-                          <img src={character.photo} alt={character.name} className="w-full h-full rounded-full object-cover" />
-                        ) : (
-                          <User className="w-6 h-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium">{character.name}</h3>
-                        <p className="text-sm text-muted-foreground">{character.theme}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingCharacter(character);
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteCharacter(character.id);
-                          }}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          onClick={() => handleRemoveCustomField(field.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={field.value}
+                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
+                          placeholder="Значення поля"
+                        />
+                      ) : (
+                        <Input
+                          type={field.type}
+                          value={field.value}
+                          onChange={(e) => handleCustomFieldChange(field.id, 'value', e.target.value)}
+                          placeholder="Значення поля"
+                        />
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Деталі персонажа */}
-      {selectedCharacter && (
-        <Card className="border border-border/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                {selectedCharacter.photo ? (
-                  <img src={selectedCharacter.photo} alt={selectedCharacter.name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User className="w-6 h-6 text-muted-foreground" />
-                )}
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">{selectedCharacter.name}</h2>
-                <p className="text-muted-foreground">{selectedCharacter.theme}</p>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {Object.keys(selectedCharacter.fields).length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {Object.entries(selectedCharacter.fields).map(([key, value]) => (
-                  <div key={key} className="space-y-2">
-                    <Label className="text-sm font-medium">{key}</Label>
-                    {renderField(key, value)}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">
-                Цей персонаж не має додаткових полів
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Діалог редагування */}
-      {editingCharacter && (
-        <Dialog open={!!editingCharacter} onOpenChange={() => setEditingCharacter(null)}>
-          <DialogContent className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Редагування персонажа</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Label htmlFor="editName">Ім'я персонажа</Label>
-                <Input
-                  id="editName"
-                  value={editingCharacter.name}
-                  onChange={(e) => setEditingCharacter({
-                    ...editingCharacter,
-                    name: e.target.value
-                  })}
-                  className="w-full"
-                />
-              </div>
-
-              {Object.keys(editingCharacter.fields).length > 0 && (
-                <div className="space-y-4">
-                  <Label>Поля персонажа</Label>
-                  <div className="grid grid-cols-1 gap-4">
-                    {Object.entries(editingCharacter.fields).map(([key, value]) => (
-                      <div key={key} className="space-y-2">
-                        <Label className="text-sm font-medium">{key}</Label>
-                        {renderField(key, value, true)}
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               )}
 
               <div className="flex gap-2">
-                <Button onClick={handleUpdateCharacter} className="flex-1">
-                  Зберегти зміни
+                <Button type="button" onClick={handleAddCustomField} variant="outline" className="flex-1">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Додати поле
                 </Button>
-                <Button variant="outline" onClick={() => setEditingCharacter(null)} className="flex-1">
-                  Скасувати
+                <Button type="button" onClick={handleGenerateCharacter} variant="outline" className="flex-1">
+                  Згенерувати
                 </Button>
               </div>
+
+              <Button onClick={handleCreateCharacter} className="w-full">
+                {t('common.create')}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {characters.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>{t('characters.noCharacters')}</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {characters.map((character) => (
+            <Card key={character.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{character.name}</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCharacter(editingCharacter === character.id ? null : character.id)}
+                    >
+                      {editingCharacter === character.id ? 'Завершити' : 'Редагувати'}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => deleteCharacter(character.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {character.photo && (
+                  <div className="mb-4">
+                    <img
+                      src={character.photo}
+                      alt={character.name}
+                      className="w-full max-w-xs h-48 object-cover rounded border mx-auto"
+                    />
+                  </div>
+                )}
+                <div className="grid gap-4">
+                  {getAllFields(character).map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <Label className="font-medium">{field.name}</Label>
+                      {editingCharacter === character.id ? (
+                        field.type === 'textarea' ? (
+                          <Textarea
+                            value={field.value}
+                            onChange={(e) => handleUpdateField(character.id, field.id, e.target.value)}
+                            className="min-h-[80px]"
+                          />
+                        ) : (
+                          <Input
+                            type={field.type}
+                            value={field.value}
+                            onChange={(e) => handleUpdateField(character.id, field.id, e.target.value)}
+                          />
+                        )
+                      ) : (
+                        <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {field.value || 'Не заповнено'}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

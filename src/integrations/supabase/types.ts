@@ -61,6 +61,7 @@ export type Database = {
           id: string
           invited_by: string
           invited_email: string
+          invited_user_id: string | null
           role: string
           token: string
           used_at: string | null
@@ -72,6 +73,7 @@ export type Database = {
           id?: string
           invited_by: string
           invited_email: string
+          invited_user_id?: string | null
           role?: string
           token?: string
           used_at?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           invited_by?: string
           invited_email?: string
+          invited_user_id?: string | null
           role?: string
           token?: string
           used_at?: string | null
@@ -93,6 +96,13 @@ export type Database = {
             columns: ["game_id"]
             isOneToOne: false
             referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_invitations_invited_user_id_fkey"
+            columns: ["invited_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -162,6 +172,30 @@ export type Database = {
           players?: string[] | null
           theme?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }

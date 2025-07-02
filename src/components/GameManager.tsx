@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, Settings, Calendar, Trash2 } from 'lucide-react';
+import { Plus, Users, Settings, Calendar, Trash2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { useGames } from '@/hooks/useGames';
 import { useLanguage } from '@/contexts/LanguageContext';
+import InviteUserDialog from './InviteUserDialog';
 
 const THEMES = [
   { id: 'theme-fantasy', name: 'Фентезі', description: 'Класичне фентезі з магією та драконами' },
@@ -171,6 +171,17 @@ const GameManager: React.FC<GameManagerProps> = ({
                 {GAME_MODES.find(m => m.id === currentGameData.mode)?.name}
               </Badge>
             </div>
+            
+            {/* Кнопка запрошення користувачів */}
+            <InviteUserDialog 
+              gameId={currentGameData.id}
+              trigger={
+                <Button size="sm" variant="outline" className="w-full text-xs h-7">
+                  <UserPlus className="w-3 h-3 mr-1" />
+                  Запросити гравця
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       )}

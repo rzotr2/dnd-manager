@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +10,8 @@ export interface Character {
   photo?: string;
   theme?: string;
   fields: Record<string, any>;
+  created_at: string;
+  updated_at: string;
 }
 
 // Helper function to safely convert Json to Record<string, any>
@@ -49,7 +50,9 @@ export const useCharacters = (gameId: string | null) => {
         name: char.name,
         photo: char.photo || undefined,
         theme: char.theme || 'theme-fantasy',
-        fields: safeJsonToFields(char.fields)
+        fields: safeJsonToFields(char.fields),
+        created_at: char.created_at,
+        updated_at: char.updated_at,
       }));
       
       setCharacters(transformedData);
@@ -65,7 +68,7 @@ export const useCharacters = (gameId: string | null) => {
     }
   };
 
-  const createCharacter = async (characterData: Omit<Character, 'id'>) => {
+  const createCharacter = async (characterData: Omit<Character, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -92,7 +95,9 @@ export const useCharacters = (gameId: string | null) => {
         name: data.name,
         photo: data.photo || undefined,
         theme: data.theme || 'theme-fantasy',
-        fields: safeJsonToFields(data.fields)
+        fields: safeJsonToFields(data.fields),
+        created_at: data.created_at,
+        updated_at: data.updated_at,
       };
       
       setCharacters(prev => [transformedCharacter, ...prev]);
@@ -138,7 +143,9 @@ export const useCharacters = (gameId: string | null) => {
         name: data.name,
         photo: data.photo || undefined,
         theme: data.theme || 'theme-fantasy',
-        fields: safeJsonToFields(data.fields)
+        fields: safeJsonToFields(data.fields),
+        created_at: data.created_at,
+        updated_at: data.updated_at,
       };
       
       setCharacters(prev => prev.map(char => char.id === characterId ? transformedCharacter : char));

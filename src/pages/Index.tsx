@@ -13,6 +13,7 @@ import AuthForm from '@/components/AuthForm';
 import AccountManagement from '@/components/AccountManagement';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import NotificationBell from '@/components/NotificationBell';
 
 const Index = () => {
   const [currentTheme, setCurrentTheme] = useState('theme-fantasy');
@@ -124,7 +125,9 @@ const Index = () => {
                     </span>
                     <Scroll className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="flex-shrink-0 w-10"></div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <NotificationBell />
+                  </div>
                 </div>
                 <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
                   {t('app.subtitle')}

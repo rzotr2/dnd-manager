@@ -1,28 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
-import { Plus, Users, Settings, Calendar, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ListChecks, Plus, Users } from 'lucide-react';
 import { useGames } from '@/hooks/useGames';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-const THEMES = [
-  { id: 'theme-fantasy', name: 'Фентезі', description: 'Класичне фентезі з магією та драконами' },
-  { id: 'theme-cyberpunk', name: 'Кіберпанк', description: 'Високі технології та низький рівень життя' },
-  { id: 'theme-stalker', name: 'Сталкер', description: 'Пост-апокаліпсис в Зоні відчуження' },
-  { id: 'theme-scifi', name: 'Наукова фантастика', description: 'Космос, роботи та майбутнє' }
-];
-
-const GAME_MODES = [
-  { id: 'simple', name: 'Спрощений', description: 'Для швидких ігор' },
-  { id: 'advanced', name: 'Стандартний', description: 'Повний набір правил' }
-];
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import GameInvitations from './GameInvitations';
+import InviteUserDialog from '@/components/InviteUserDialog';
 
 interface GameManagerProps {
   currentGame: string | null;
@@ -30,238 +17,174 @@ interface GameManagerProps {
   onThemeChange: (theme: string) => void;
 }
 
-const GameManager: React.FC<GameManagerProps> = ({ 
-  currentGame, 
-  onGameChange, 
-  onThemeChange 
-}) => {
-  const { games, loading, createGame, updateGame, deleteGame } = useGames();
+const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, onThemeChange }) => {
+  const { games, loading, createGame } = useGames();
   const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [newGameData, setNewGameData] = useState({
-    name: '',
-    description: '',
-    theme: 'theme-fantasy',
-    mode: 'simple' as 'simple' | 'advanced'
-  });
-
-  // Вибрати першу гру автоматично, якщо немає поточної
-  useEffect(() => {
-    if (games.length > 0 && !currentGame) {
-      const firstGame = games[0];
-      onGameChange(firstGame.id);
-      onThemeChange(firstGame.theme);
-    }
-  }, [games, currentGame, onGameChange, onThemeChange]);
-
-  // Оновити тему при зміні поточної гри
-  useEffect(() => {
-    if (currentGame) {
-      const game = games.find(g => g.id === currentGame);
-      if (game) {
-        onThemeChange(game.theme);
-      }
-    }
-  }, [currentGame, games, onThemeChange]);
-
-  const handleCreateGame = async () => {
-    if (!newGameData.name.trim()) return;
-
-    const gameData = {
-      name: newGameData.name,
-      description: newGameData.description,
-      theme: newGameData.theme,
-      mode: newGameData.mode,
-      players: [], // Порожній масив
-    };
-
-    const createdGame = await createGame(gameData);
-    if (createdGame) {
-      onGameChange(createdGame.id);
-      onThemeChange(createdGame.theme);
-      setIsCreateDialogOpen(false);
-      setNewGameData({
-        name: '',
-        description: '',
-        theme: 'theme-fantasy',
-        mode: 'simple' as 'simple' | 'advanced'
-      });
-    }
-  };
+  const [newGameName, setNewGameName] = useState('');
+  const [newGameDescription, setNewGameDescription] = useState('');
+  const [newGameTheme, setNewGameTheme] = useState('theme-fantasy');
+  const [newGameMode, setNewGameMode] = useState<'simple' | 'advanced'>('simple');
 
   const handleGameSelect = (gameId: string) => {
-    onGameChange(gameId);
-    const game = games.find(g => g.id === gameId);
-    if (game) {
-      onThemeChange(game.theme);
+    const selectedGame = games.find(game => game.id === gameId);
+    if (selectedGame) {
+      onGameChange(gameId);
+      onThemeChange(selectedGame.theme);
+    } else {
+      onGameChange(null);
     }
   };
 
-  const handleDeleteGame = async (gameId: string) => {
-    await deleteGame(gameId);
-    if (currentGame === gameId) {
-      const remainingGames = games.filter(g => g.id !== gameId);
-      if (remainingGames.length > 0) {
-        onGameChange(remainingGames[0].id);
-        onThemeChange(remainingGames[0].theme);
-      } else {
-        onGameChange(null);
-        onThemeChange('theme-fantasy');
-      }
-    }
+  const handleCreateGame = async () => {
+    if (!newGameName.trim()) return;
+
+    const gameData = {
+      name: newGameName,
+      description: newGameDescription,
+      theme: newGameTheme,
+      mode: newGameMode,
+      players: [],
+    };
+
+    await createGame(gameData);
+    setNewGameName('');
+    setNewGameDescription('');
+    setIsCreateDialogOpen(false);
   };
-
-  const currentGameData = games.find(g => g.id === currentGame);
-
-  if (loading) {
-    return <div className="p-2 text-xs text-muted-foreground">Завантаження...</div>;
-  }
 
   return (
     <div className="space-y-4">
-      {/* Поточна гра */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm">Поточна гра</h3>
-        {games.length === 0 ? (
-          <p className="text-xs text-muted-foreground">{t('games.noGames')}</p>
-        ) : (
-          <Select value={currentGame || ''} onValueChange={handleGameSelect}>
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Оберіть гру" />
+      {/* Game Selection */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-primary" />
+            {t('games.selectGame')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={currentGame || 'default'} onValueChange={handleGameSelect}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t('games.noGameSelected')} />
             </SelectTrigger>
             <SelectContent>
-              {games.map(game => (
-                <SelectItem key={game.id} value={game.id}>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{game.name}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {THEMES.find(t => t.id === game.theme)?.name}
-                    </Badge>
-                  </div>
-                </SelectItem>
-              ))}
+              <SelectItem value="default">{t('games.noGame')}</SelectItem>
+              {loading ? (
+                <SelectItem value="loading" disabled>{t('common.loading')}</SelectItem>
+              ) : (
+                games.map((game) => (
+                  <SelectItem key={game.id} value={game.id}>
+                    {game.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
-        )}
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Інформація про поточну гру */}
-      {currentGameData && (
-        <Card className="bg-muted/20">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm">{currentGameData.name}</h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteGame(currentGameData.id)}
-                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-            {currentGameData.description && (
-              <p className="text-xs text-muted-foreground">{currentGameData.description}</p>
-            )}
-            <div className="flex items-center gap-2 text-xs">
-              <Badge variant="secondary">
-                {THEMES.find(t => t.id === currentGameData.theme)?.name}
-              </Badge>
-              <Badge variant="outline">
-                {GAME_MODES.find(m => m.id === currentGameData.mode)?.name}
-              </Badge>
-            </div>
+      {/* Current Game Actions */}
+      {currentGame && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              Дії з грою
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <InviteUserDialog gameId={currentGame} />
+            <GameInvitations gameId={currentGame} />
           </CardContent>
         </Card>
       )}
 
-      {/* Кнопки керування */}
-      <div className="space-y-3">
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="w-full justify-start text-xs h-8">
-              <Plus className="w-3 h-3 mr-2" />
-              {t('games.create')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="space-y-8 max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{t('games.create')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Label htmlFor="gameName">{t('common.name')}</Label>
-                <Input
-                  id="gameName"
-                  value={newGameData.name}
-                  onChange={(e) => setNewGameData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Назва гри"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label htmlFor="gameDescription">{t('common.description')}</Label>
-                <Textarea
-                  id="gameDescription"
-                  value={newGameData.description}
-                  onChange={(e) => setNewGameData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Опис гри (необов'язково)"
-                  className="min-h-[80px] w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label>Тема</Label>
-                <Select 
-                  value={newGameData.theme} 
-                  onValueChange={(value) => setNewGameData(prev => ({ ...prev, theme: value }))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {THEMES.map(theme => (
-                      <SelectItem key={theme.id} value={theme.id}>
-                        <div>
-                          <div className="font-semibold">{theme.name}</div>
-                          <div className="text-xs text-muted-foreground">{theme.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4">
-                <Label>Режим гри</Label>
-                <Select 
-                  value={newGameData.mode} 
-                  onValueChange={(value: 'simple' | 'advanced') => setNewGameData(prev => ({ ...prev, mode: value }))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GAME_MODES.map(mode => (
-                      <SelectItem key={mode.id} value={mode.id}>
-                        <div>
-                          <div className="font-semibold">{mode.name}</div>
-                          <div className="text-xs text-muted-foreground">{mode.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button onClick={handleCreateGame} className="w-full">
-                {t('common.create')}
-              </Button>
+      {/* Create Game Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogTrigger asChild>
+          <Button className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            {t('games.createNew')}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('games.createNew')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="game-name">{t('games.name')}</Label>
+              <Input
+                id="game-name"
+                placeholder={t('games.namePlaceholder')}
+                value={newGameName}
+                onChange={(e) => setNewGameName(e.target.value)}
+              />
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="game-description">{t('games.description')}</Label>
+              <Input
+                id="game-description"
+                placeholder={t('games.descriptionPlaceholder')}
+                value={newGameDescription}
+                onChange={(e) => setNewGameDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="game-theme">{t('games.theme')}</Label>
+              <Select value={newGameTheme} onValueChange={setNewGameTheme}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('games.themePlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="theme-fantasy">{t('themes.fantasy')}</SelectItem>
+                  <SelectItem value="theme-modern">{t('themes.modern')}</SelectItem>
+                  <SelectItem value="theme-scifi">{t('themes.scifi')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="game-mode">{t('games.mode')}</Label>
+              <Select value={newGameMode} onValueChange={setNewGameMode}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('games.modePlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="simple">{t('modes.simple')}</SelectItem>
+                  <SelectItem value="advanced">{t('modes.advanced')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleCreateGame}>{t('common.create')}</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Games List */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-primary" />
+            {t('games.yourGames')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+          ) : games.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('games.noGames')}</p>
+          ) : (
+            <ul className="list-none pl-0 space-y-2">
+              {games.map((game) => (
+                <li key={game.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors">
+                  <span className="text-sm font-medium">{game.name}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type Language = 'uk' | 'en';
@@ -70,6 +69,52 @@ const translations = {
     'games.manage': 'Керувати грою',
     'games.noGames': 'У вас ще немає ігор',
     'games.createFirst': 'Створіть свою першу гру',
+    'games.selectGame': 'Оберіть гру',
+    'games.noGameSelected': 'Гру не вибрано',
+    'games.noGame': 'Без гри',
+    'games.createNew': 'Створити нову гру',
+    'games.name': 'Назва гри',
+    'games.namePlaceholder': 'Введіть назву гри',
+    'games.description': 'Опис гри',
+    'games.descriptionPlaceholder': 'Введіть опис гри',
+    'games.theme': 'Тема гри',
+    'games.themePlaceholder': 'Оберіть тему',
+    'games.mode': 'Режим гри',
+    'games.modePlaceholder': 'Оберіть режим',
+    'games.yourGames': 'Ваші ігри',
+    'games.gameMembers': 'Учасники гри',
+    'games.noMembers': 'Немає учасників',
+    
+    // Themes
+    'themes.fantasy': 'Фентезі',
+    'themes.modern': 'Сучасний',
+    'themes.scifi': 'Наукова фантастика',
+    
+    // Modes
+    'modes.simple': 'Простий',
+    'modes.advanced': 'Розширений',
+    
+    // Members
+    'members.you': 'Ви',
+    'members.owner': 'Власник',
+    'members.editor': 'Редактор',
+    'members.viewer': 'Глядач',
+    
+    // Invitations
+    'invitations.createInviteLink': 'Створити запрошення',
+    'invitations.inviteLinks': 'Посилання запрошень',
+    'invitations.inviteEmail': 'Email для запрошення',
+    'invitations.emailPlaceholder': 'Введіть email користувача',
+    'invitations.role': 'Роль',
+    'invitations.roleViewer': 'Глядач',
+    'invitations.roleEditor': 'Редактор',
+    'invitations.roleOwner': 'Власник',
+    'invitations.createLink': 'Створити посилання',
+    'invitations.copyLink': 'Скопіювати посилання',
+    'invitations.deleteLink': 'Видалити посилання',
+    'invitations.expires': 'Дійсне до',
+    'invitations.expired': 'Прострочено',
+    'invitations.linkCopied': 'Посилання скопійовано',
     
     // Account Management
     'account.title': 'Управління акаунтом',
@@ -166,6 +211,52 @@ const translations = {
     'games.manage': 'Manage game',
     'games.noGames': 'You don\'t have any games yet',
     'games.createFirst': 'Create your first game',
+    'games.selectGame': 'Select game',
+    'games.noGameSelected': 'No game selected',
+    'games.noGame': 'No game',
+    'games.createNew': 'Create new game',
+    'games.name': 'Game name',
+    'games.namePlaceholder': 'Enter game name',
+    'games.description': 'Game description',
+    'games.descriptionPlaceholder': 'Enter game description',
+    'games.theme': 'Game theme',
+    'games.themePlaceholder': 'Select theme',
+    'games.mode': 'Game mode',
+    'games.modePlaceholder': 'Select mode',
+    'games.yourGames': 'Your games',
+    'games.gameMembers': 'Game members',
+    'games.noMembers': 'No members',
+    
+    // Themes
+    'themes.fantasy': 'Fantasy',
+    'themes.modern': 'Modern',
+    'themes.scifi': 'Sci-Fi',
+    
+    // Modes
+    'modes.simple': 'Simple',
+    'modes.advanced': 'Advanced',
+    
+    // Members
+    'members.you': 'You',
+    'members.owner': 'Owner',
+    'members.editor': 'Editor',
+    'members.viewer': 'Viewer',
+    
+    // Invitations
+    'invitations.createInviteLink': 'Create invitation',
+    'invitations.inviteLinks': 'Invitation links',
+    'invitations.inviteEmail': 'Email to invite',
+    'invitations.emailPlaceholder': 'Enter user email',
+    'invitations.role': 'Role',
+    'invitations.roleViewer': 'Viewer',
+    'invitations.roleEditor': 'Editor',
+    'invitations.roleOwner': 'Owner',
+    'invitations.createLink': 'Create link',
+    'invitations.copyLink': 'Copy link',
+    'invitations.deleteLink': 'Delete link',
+    'invitations.expires': 'Expires',
+    'invitations.expired': 'Expired',
+    'invitations.linkCopied': 'Link copied',
     
     // Account Management
     'account.title': 'Account Management',

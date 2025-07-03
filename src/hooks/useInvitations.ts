@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -102,34 +103,49 @@ export const useInvitations = () => {
       // Check if identifier is email or username
       const isEmail = identifier.includes('@');
       let targetUserId = null;
+      let targetEmail = '';
+      let targetUsername = '';
 
       if (isEmail) {
-        // Try to find user by email in profiles
+        // Search by email in profiles table
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, email, username')
           .eq('email', identifier)
-          .single();
+          .maybeSingle();
         
-        targetUserId = profile?.id;
+        if (profile) {
+          targetUserId = profile.id;
+          targetEmail = profile.email || identifier;
+          targetUsername = profile.username || '';
+        } else {
+          toast({
+            title: t('error.title'),
+            description: 'Користувача з таким email не знайдено',
+            variant: 'destructive',
+          });
+          return false;
+        }
       } else {
-        // Try to find user by username
+        // Search by username in profiles table
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, email, username')
           .eq('username', identifier)
-          .single();
+          .maybeSingle();
         
-        targetUserId = profile?.id;
-      }
-
-      if (!targetUserId) {
-        toast({
-          title: t('error.title'),
-          description: 'Користувача не знайдено',
-          variant: 'destructive',
-        });
-        return false;
+        if (profile) {
+          targetUserId = profile.id;
+          targetEmail = profile.email || '';
+          targetUsername = profile.username || identifier;
+        } else {
+          toast({
+            title: t('error.title'),
+            description: 'Користувача з таким іменем не знайдено',
+            variant: 'destructive',
+          });
+          return false;
+        }
       }
 
       // Check if invitation already exists
@@ -140,7 +156,7 @@ export const useInvitations = () => {
         .eq('invited_user_id', targetUserId)
         .is('used_at', null)
         .gte('expires_at', new Date().toISOString())
-        .single();
+        .maybeSingle();
 
       if (existingInvitation) {
         toast({
@@ -156,8 +172,8 @@ export const useInvitations = () => {
         .insert([{
           game_id: gameId,
           invited_by: user.id,
-          invited_email: isEmail ? identifier : '',
-          invited_username: !isEmail ? identifier : null,
+          invited_email: targetEmail,
+          invited_username: targetUsername || null,
           invited_user_id: targetUserId,
           role: role,
         }]);

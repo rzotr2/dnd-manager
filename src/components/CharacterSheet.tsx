@@ -9,8 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Plus, Save, Trash2, Users, Shield, Sword, Backpack, FileText, Dice6 } from 'lucide-react';
+import { Plus, Save, Trash2, Users, Shield, Sword, Backpack, FileText } from 'lucide-react';
 import { CharacterFieldsData } from '@/types/character';
 import { getCharacterFieldsTemplate } from '@/utils/characterGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -38,23 +37,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
   useEffect(() => {
     if (currentCharacter) {
       setCharacterName(currentCharacter.name);
-      
-      // Safely parse character fields
-      let characterFields: CharacterFieldsData = {};
-      if (currentCharacter.fields) {
-        if (typeof currentCharacter.fields === 'object' && !Array.isArray(currentCharacter.fields)) {
-          characterFields = currentCharacter.fields as CharacterFieldsData;
-        }
-      }
-
-      // Merge with template to ensure all fields exist
-      const mergedFields = { ...fieldTemplate, ...characterFields };
-      setEditingFields(mergedFields);
+      setEditingFields(currentCharacter.fields || {});
     } else {
-      setEditingFields(fieldTemplate);
+      setEditingFields({});
       setCharacterName('');
     }
-  }, [currentCharacter, fieldTemplate]);
+  }, [currentCharacter]);
 
   const handleCreateCharacter = async () => {
     if (!characterName.trim()) {
@@ -68,6 +56,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
 
     try {
       await createCharacter({
+        game_id: gameId,
         name: characterName,
         fields: editingFields,
         theme,
@@ -79,7 +68,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
       });
       
       setCharacterName('');
-      setEditingFields(fieldTemplate);
+      setEditingFields({});
       setIsEditing(false);
     } catch (error) {
       toast({
@@ -148,11 +137,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     );
   };
 
-  const renderField = (fieldName: string, fieldValue: any) => {
+  const renderField = (fieldName: string) => {
     const fieldConfig = fieldTemplate[fieldName];
     if (!fieldConfig || typeof fieldConfig !== 'object') return null;
 
-    const currentValue = editingFields[fieldName] || '';
+    const currentValue = editingFields[fieldName] || (fieldConfig.type === 'number' ? 0 : '');
 
     return (
       <div key={fieldName} className="space-y-2">
@@ -189,17 +178,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
         )}
       </div>
     );
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'basic': return <Users className="w-4 h-4" />;
-      case 'stats': return <Shield className="w-4 h-4" />;
-      case 'skills': return <Sword className="w-4 h-4" />;
-      case 'equipment': return <Backpack className="w-4 h-4" />;
-      case 'notes': return <FileText className="w-4 h-4" />;
-      default: return <Dice6 className="w-4 h-4" />;
-    }
   };
 
   return (
@@ -341,8 +319,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
                   {['basic', 'stats', 'skills', 'equipment', 'notes'].map((category) => (
                     <TabsContent key={category} value={category} className="mt-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {getFieldsByCategory(category).map(([fieldName, fieldValue]) =>
-                          renderField(fieldName, fieldValue)
+                        {getFieldsByCategory(category).map(([fieldName]) =>
+                          renderField(fieldName)
                         )}
                       </div>
                     </TabsContent>

@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -87,7 +86,7 @@ export const useInvitations = () => {
       console.error('Error fetching invitations:', error);
       toast({
         title: t('error.title'),
-        description: 'Не вдалося завантажити запрошення',
+        description: t('invitations.loadError'),
         variant: 'destructive',
       });
     } finally {
@@ -100,6 +99,8 @@ export const useInvitations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Searching for user with identifier:', identifier);
+
       // Check if identifier is email or username
       const isEmail = identifier.includes('@');
       let targetUserId = null;
@@ -107,41 +108,61 @@ export const useInvitations = () => {
       let targetUsername = '';
 
       if (isEmail) {
+        console.log('Searching by email in profiles table');
         // Search by email in profiles table
-        const { data: profile } = await supabase
+        const { data: profiles, error: profileError } = await supabase
           .from('profiles')
           .select('id, email, username')
-          .eq('email', identifier)
-          .maybeSingle();
+          .eq('email', identifier);
         
-        if (profile) {
+        console.log('Profile search result:', profiles, 'Error:', profileError);
+        
+        if (profileError) {
+          console.error('Profile search error:', profileError);
+          throw profileError;
+        }
+        
+        if (profiles && profiles.length > 0) {
+          const profile = profiles[0];
           targetUserId = profile.id;
           targetEmail = profile.email || identifier;
           targetUsername = profile.username || '';
+          console.log('Found user by email:', { targetUserId, targetEmail, targetUsername });
         } else {
+          console.log('No user found with email:', identifier);
           toast({
             title: t('error.title'),
-            description: 'Користувача з таким email не знайдено',
+            description: t('invitations.userNotFoundEmail'),
             variant: 'destructive',
           });
           return false;
         }
       } else {
+        console.log('Searching by username in profiles table');
         // Search by username in profiles table
-        const { data: profile } = await supabase
+        const { data: profiles, error: profileError } = await supabase
           .from('profiles')
           .select('id, email, username')
-          .eq('username', identifier)
-          .maybeSingle();
+          .eq('username', identifier);
         
-        if (profile) {
+        console.log('Profile search result:', profiles, 'Error:', profileError);
+        
+        if (profileError) {
+          console.error('Profile search error:', profileError);
+          throw profileError;
+        }
+        
+        if (profiles && profiles.length > 0) {
+          const profile = profiles[0];
           targetUserId = profile.id;
           targetEmail = profile.email || '';
           targetUsername = profile.username || identifier;
+          console.log('Found user by username:', { targetUserId, targetEmail, targetUsername });
         } else {
+          console.log('No user found with username:', identifier);
           toast({
             title: t('error.title'),
-            description: 'Користувача з таким іменем не знайдено',
+            description: t('invitations.userNotFoundUsername'),
             variant: 'destructive',
           });
           return false;
@@ -161,11 +182,20 @@ export const useInvitations = () => {
       if (existingInvitation) {
         toast({
           title: t('error.title'),
-          description: 'Запрошення вже надіслано цьому користувачу',
+          description: t('invitations.alreadyInvited'),
           variant: 'destructive',
         });
         return false;
       }
+
+      console.log('Creating invitation with data:', {
+        game_id: gameId,
+        invited_by: user.id,
+        invited_email: targetEmail,
+        invited_username: targetUsername || null,
+        invited_user_id: targetUserId,
+        role: role,
+      });
 
       const { error } = await supabase
         .from('game_invitations')
@@ -178,11 +208,14 @@ export const useInvitations = () => {
           role: role,
         }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Invitation creation error:', error);
+        throw error;
+      }
 
       toast({
         title: t('success.title'),
-        description: 'Запрошення надіслано успішно',
+        description: t('invitations.invitationSent'),
       });
 
       return true;
@@ -190,7 +223,7 @@ export const useInvitations = () => {
       console.error('Error sending invitation:', error);
       toast({
         title: t('error.title'),
-        description: 'Не вдалося надіслати запрошення',
+        description: t('invitations.sendError'),
         variant: 'destructive',
       });
       return false;
@@ -234,7 +267,7 @@ export const useInvitations = () => {
 
       toast({
         title: t('success.title'),
-        description: 'Ви успішно приєдналися до гри',
+        description: t('invitations.invitationAccepted'),
       });
 
       return true;
@@ -242,7 +275,7 @@ export const useInvitations = () => {
       console.error('Error accepting invitation:', error);
       toast({
         title: t('error.title'),
-        description: 'Не вдалося прийняти запрошення',
+        description: t('invitations.acceptError'),
         variant: 'destructive',
       });
       return false;
@@ -262,7 +295,7 @@ export const useInvitations = () => {
 
       toast({
         title: t('success.title'),
-        description: 'Запрошення відхилено',
+        description: t('invitations.invitationDeclined'),
       });
 
       return true;
@@ -270,7 +303,7 @@ export const useInvitations = () => {
       console.error('Error declining invitation:', error);
       toast({
         title: t('error.title'),
-        description: 'Не вдалося відхилити запрошення',
+        description: t('invitations.declineError'),
         variant: 'destructive',
       });
       return false;

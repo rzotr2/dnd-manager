@@ -115,6 +115,16 @@ const translations = {
     'invitations.expires': 'Дійсне до',
     'invitations.expired': 'Прострочено',
     'invitations.linkCopied': 'Посилання скопійовано',
+    'invitations.loadError': 'Не вдалося завантажити запрошення',
+    'invitations.sendError': 'Не вдалося надіслати запрошення',
+    'invitations.acceptError': 'Не вдалося прийняти запрошення',
+    'invitations.declineError': 'Не вдалося відхилити запрошення',
+    'invitations.userNotFoundEmail': 'Користувача з таким email не знайдено',
+    'invitations.userNotFoundUsername': 'Користувача з таким іменем не знайдено',
+    'invitations.alreadyInvited': 'Запрошення вже надіслано цьому користувачу',
+    'invitations.invitationSent': 'Запрошення надіслано успішно',
+    'invitations.invitationAccepted': 'Ви успішно приєдналися до гри',
+    'invitations.invitationDeclined': 'Запрошення відхилено',
     
     // Account Management
     'account.title': 'Управління акаунтом',
@@ -257,6 +267,16 @@ const translations = {
     'invitations.expires': 'Expires',
     'invitations.expired': 'Expired',
     'invitations.linkCopied': 'Link copied',
+    'invitations.loadError': 'Failed to load invitations',
+    'invitations.sendError': 'Failed to send invitation',
+    'invitations.acceptError': 'Failed to accept invitation',
+    'invitations.declineError': 'Failed to decline invitation',
+    'invitations.userNotFoundEmail': 'User with this email not found',
+    'invitations.userNotFoundUsername': 'User with this username not found',
+    'invitations.alreadyInvited': 'Invitation already sent to this user',
+    'invitations.invitationSent': 'Invitation sent successfully',
+    'invitations.invitationAccepted': 'You have successfully joined the game',
+    'invitations.invitationDeclined': 'Invitation declined',
     
     // Account Management
     'account.title': 'Account Management',

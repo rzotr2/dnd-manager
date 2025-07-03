@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -95,7 +96,6 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
           </CardHeader>
           <CardContent className="space-y-3">
             <InviteUserDialog gameId={currentGame} />
-            <GameInvitations gameId={currentGame} />
           </CardContent>
         </Card>
       )}

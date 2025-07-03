@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,25 +37,48 @@ export const useInvitations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // First get the invitations
+      const { data: invitationsData, error: invitationsError } = await supabase
         .from('game_invitations')
-        .select(`
-          *,
-          games:game_id (name, description),
-          profiles:invited_by (username)
-        `)
+        .select('*')
         .or(`invited_user_id.eq.${user.id},invited_email.eq.${user.email}`)
         .is('used_at', null)
         .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (invitationsError) throw invitationsError;
 
-      const transformedData = (data || []).map(invitation => ({
-        ...invitation,
-        games: invitation.games || { name: 'Unknown Game' },
-        profiles: invitation.profiles || { username: 'Unknown User' }
-      }));
+      if (!invitationsData || invitationsData.length === 0) {
+        setInvitations([]);
+        setUnreadCount(0);
+        return;
+      }
+
+      // Get game details for all invitations
+      const gameIds = invitationsData.map(inv => inv.game_id);
+      const { data: gamesData } = await supabase
+        .from('games')
+        .select('id, name, description')
+        .in('id', gameIds);
+
+      // Get profiles for all invited_by users
+      const invitedByIds = invitationsData.map(inv => inv.invited_by);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', invitedByIds);
+
+      // Transform and combine the data
+      const transformedData: GameInvitation[] = invitationsData.map(invitation => {
+        const game = gamesData?.find(g => g.id === invitation.game_id);
+        const profile = profilesData?.find(p => p.id === invitation.invited_by);
+
+        return {
+          ...invitation,
+          games: game || { name: 'Unknown Game' },
+          profiles: profile || { username: 'Unknown User' }
+        };
+      });
 
       setInvitations(transformedData);
       setUnreadCount(transformedData.length);

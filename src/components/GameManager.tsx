@@ -146,7 +146,7 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
             </div>
              <div className="space-y-2">
               <Label htmlFor="game-mode">{t('games.mode')}</Label>
-              <Select value={newGameMode} onValueChange={setNewGameMode}>
+              <Select value={newGameMode} onValueChange={(value: 'simple' | 'advanced') => setNewGameMode(value)}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t('games.modePlaceholder')} />
                 </SelectTrigger>

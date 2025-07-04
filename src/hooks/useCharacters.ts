@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +32,10 @@ const safeJsonToFields = (json: Json): CharacterField[] => {
 
 // Helper function to convert CharacterField[] to Json
 const fieldsToJson = (fields: CharacterField[]): Json => {
-  return fields as Json;
+  return fields.map(field => ({
+    name: field.name,
+    value: field.value
+  })) as Json;
 };
 
 export const useCharacters = (gameId: string | null) => {

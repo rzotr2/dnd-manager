@@ -9,24 +9,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit2, Trash2, User, Dice6, X } from 'lucide-react';
-import { useCharacters, type Character } from '@/hooks/useCharacters';
+import { useCharacters, type Character, type CharacterField } from '@/hooks/useCharacters';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateRandomCharacter, getBasicCharacterFields, getAllThemes } from '@/utils/characterGenerator';
 import CharacterImageUpload from './CharacterImageUpload';
 
 interface CharacterSheetProps {
   gameId: string;
-  theme: string;
+  theme?: string;
 }
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme = 'theme-fantasy' }) => {
   const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
   const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
   const [newCharacterName, setNewCharacterName] = useState('');
   const [newCharacterTheme, setNewCharacterTheme] = useState(theme);
-  const [newCharacterFields, setNewCharacterFields] = useState(getBasicCharacterFields());
+  const [newCharacterFields, setNewCharacterFields] = useState<CharacterField[]>(getBasicCharacterFields());
   const [newFieldName, setNewFieldName] = useState('');
 
   const allThemes = getAllThemes();
@@ -39,6 +39,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     if (!newCharacterName.trim()) return;
 
     await createCharacter({
+      game_id: gameId,
       name: newCharacterName,
       theme: newCharacterTheme,
       fields: newCharacterFields,
@@ -59,7 +60,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
     setEditingCharacter(character);
     setNewCharacterName(character.name);
     setNewCharacterTheme(character.theme || theme);
-    setNewCharacterFields(character.fields || getBasicCharacterFields());
+    // Ensure fields is always an array
+    const characterFields = Array.isArray(character.fields) 
+      ? character.fields 
+      : getBasicCharacterFields();
+    setNewCharacterFields(characterFields);
   };
 
   const handleUpdateCharacter = async () => {
@@ -188,7 +193,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
             {/* Character Fields */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Характеристики</Label>
+                <Label className="text-base font-semibold">{t('characters.characteristics')}</Label>
               </div>
               
               {newCharacterFields.map((field, index) => (
@@ -271,7 +276,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
               {t('characters.noCharacters')}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Створіть свого першого персонажа для гри
+              {t('characters.createFirstCharacter')}
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -315,8 +320,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
                 {/* Character Image */}
                 <CharacterImageUpload
                   characterId={character.id}
-                  currentImageUrl={character.photo}
-                  onImageUpdate={(url) => {
+                  currentImage={character.photo}
+                  onImageChange={(url) => {
                     // Оновлення відбудеться автоматично через хук
                   }}
                 />

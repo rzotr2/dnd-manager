@@ -1,7 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
+
+export interface CharacterField {
+  name: string;
+  value: string;
+}
 
 export interface Character {
   id: string;
@@ -9,17 +15,20 @@ export interface Character {
   name: string;
   photo?: string;
   theme?: string;
-  fields: Record<string, any>;
+  fields: CharacterField[];
   created_at: string;
   updated_at: string;
 }
 
-// Helper function to safely convert Json to Record<string, any>
-const safeJsonToFields = (json: Json): Record<string, any> => {
-  if (json && typeof json === 'object' && !Array.isArray(json)) {
-    return json as Record<string, any>;
+// Helper function to safely convert Json to CharacterField[]
+const safeJsonToFields = (json: Json): CharacterField[] => {
+  if (Array.isArray(json)) {
+    return json.map(item => ({
+      name: typeof item === 'object' && item !== null && 'name' in item ? String(item.name) : '',
+      value: typeof item === 'object' && item !== null && 'value' in item ? String(item.value) : ''
+    }));
   }
-  return {};
+  return [];
 };
 
 export const useCharacters = (gameId: string | null) => {
@@ -80,7 +89,7 @@ export const useCharacters = (gameId: string | null) => {
           name: characterData.name,
           photo: characterData.photo || null,
           theme: characterData.theme || 'theme-fantasy',
-          fields: characterData.fields || {},
+          fields: characterData.fields || [],
           user_id: user.id,
         }])
         .select()

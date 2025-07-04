@@ -161,7 +161,7 @@ const Index = () => {
               <TabsContent value="characters" className="animate-fade-in">
                 <div className="space-y-4">
                   {currentGame ? (
-                    <CharacterSheet currentGameId={currentGame} />
+                    <CharacterSheet gameId={currentGame} />
                   ) : (
                     <Card className="border border-border/20">
                       <CardContent className="p-6 text-center">

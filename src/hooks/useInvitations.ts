@@ -37,7 +37,9 @@ export const useInvitations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // First get the invitations
+      console.log('Fetching invitations for user:', user.id, user.email);
+
+      // Get invitations by user_id and email
       const { data: invitationsData, error: invitationsError } = await supabase
         .from('game_invitations')
         .select('*')
@@ -46,7 +48,12 @@ export const useInvitations = () => {
         .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
 
-      if (invitationsError) throw invitationsError;
+      if (invitationsError) {
+        console.error('Error fetching invitations:', invitationsError);
+        throw invitationsError;
+      }
+
+      console.log('Fetched invitations:', invitationsData);
 
       if (!invitationsData || invitationsData.length === 0) {
         setInvitations([]);
@@ -75,8 +82,8 @@ export const useInvitations = () => {
 
         return {
           ...invitation,
-          games: game || { name: 'Unknown Game' },
-          profiles: profile || { username: 'Unknown User' }
+          games: game || { name: 'Невідома гра' },
+          profiles: profile || { username: 'Невідомий користувач' }
         };
       });
 
@@ -94,79 +101,54 @@ export const useInvitations = () => {
     }
   };
 
-  const sendInvitation = async (gameId: string, identifier: string, role: string = 'viewer') => {
+  const sendInvitation = async (gameId: string, email: string, role: string = 'viewer') => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      console.log('Searching for user with identifier:', identifier);
+      console.log('Sending invitation to email:', email);
 
-      // Check if identifier is email or username
-      const isEmail = identifier.includes('@');
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast({
+          title: t('error.title'),
+          description: 'Неправильний формат email',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      // First check if user exists in auth.users by email
+      // We do this by checking if there's a profile with this email
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, username')
+        .eq('email', email)
+        .maybeSingle();
+
+      console.log('Profile search result:', profileData, 'Error:', profileError);
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Profile search error:', profileError);
+        throw profileError;
+      }
+
       let targetUserId = null;
-      let targetEmail = '';
       let targetUsername = '';
 
-      if (isEmail) {
-        console.log('Searching by email in profiles table');
-        // Search by email in profiles table
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, email, username')
-          .eq('email', identifier);
-        
-        console.log('Profile search result:', profiles, 'Error:', profileError);
-        
-        if (profileError) {
-          console.error('Profile search error:', profileError);
-          throw profileError;
-        }
-        
-        if (profiles && profiles.length > 0) {
-          const profile = profiles[0];
-          targetUserId = profile.id;
-          targetEmail = profile.email || identifier;
-          targetUsername = profile.username || '';
-          console.log('Found user by email:', { targetUserId, targetEmail, targetUsername });
-        } else {
-          console.log('No user found with email:', identifier);
-          toast({
-            title: t('error.title'),
-            description: t('invitations.userNotFoundEmail'),
-            variant: 'destructive',
-          });
-          return false;
-        }
+      if (profileData) {
+        targetUserId = profileData.id;
+        targetUsername = profileData.username || '';
+        console.log('Found user:', { targetUserId, email, targetUsername });
       } else {
-        console.log('Searching by username in profiles table');
-        // Search by username in profiles table
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, email, username')
-          .eq('username', identifier);
-        
-        console.log('Profile search result:', profiles, 'Error:', profileError);
-        
-        if (profileError) {
-          console.error('Profile search error:', profileError);
-          throw profileError;
-        }
-        
-        if (profiles && profiles.length > 0) {
-          const profile = profiles[0];
-          targetUserId = profile.id;
-          targetEmail = profile.email || '';
-          targetUsername = profile.username || identifier;
-          console.log('Found user by username:', { targetUserId, targetEmail, targetUsername });
-        } else {
-          console.log('No user found with username:', identifier);
-          toast({
-            title: t('error.title'),
-            description: t('invitations.userNotFoundUsername'),
-            variant: 'destructive',
-          });
-          return false;
-        }
+        console.log('No user found with email:', email);
+        toast({
+          title: t('error.title'),
+          description: t('invitations.userNotFoundEmail'),
+          variant: 'destructive',
+        });
+        return false;
       }
 
       // Check if invitation already exists
@@ -174,7 +156,7 @@ export const useInvitations = () => {
         .from('game_invitations')
         .select('id')
         .eq('game_id', gameId)
-        .eq('invited_user_id', targetUserId)
+        .eq('invited_email', email)
         .is('used_at', null)
         .gte('expires_at', new Date().toISOString())
         .maybeSingle();
@@ -191,7 +173,7 @@ export const useInvitations = () => {
       console.log('Creating invitation with data:', {
         game_id: gameId,
         invited_by: user.id,
-        invited_email: targetEmail,
+        invited_email: email,
         invited_username: targetUsername || null,
         invited_user_id: targetUserId,
         role: role,
@@ -202,7 +184,7 @@ export const useInvitations = () => {
         .insert([{
           game_id: gameId,
           invited_by: user.id,
-          invited_email: targetEmail,
+          invited_email: email,
           invited_username: targetUsername || null,
           invited_user_id: targetUserId,
           role: role,

@@ -17,19 +17,19 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ gameId }) => {
   const { sendInvitation } = useInvitations();
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState('viewer');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendInvitation = async () => {
-    if (!identifier.trim()) return;
+    if (!email.trim()) return;
 
     setIsLoading(true);
-    const success = await sendInvitation(gameId, identifier.trim(), role);
+    const success = await sendInvitation(gameId, email.trim(), role);
     setIsLoading(false);
 
     if (success) {
-      setIdentifier('');
+      setEmail('');
       setRole('viewer');
       setIsOpen(false);
     }
@@ -52,19 +52,19 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ gameId }) => {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="user-identifier">
-              Email або ім'я користувача
+            <Label htmlFor="user-email">
+              Email користувача
             </Label>
             <Input
-              id="user-identifier"
-              type="text"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="user@example.com або username"
+              id="user-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@example.com"
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
-              Введіть email або ім'я користувача існуючого акаунту
+              Введіть email існуючого зареєстрованого користувача
             </p>
           </div>
           
@@ -86,7 +86,7 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ gameId }) => {
           
           <Button 
             onClick={handleSendInvitation} 
-            disabled={!identifier.trim() || isLoading}
+            disabled={!email.trim() || isLoading}
             className="w-full mt-6"
           >
             <Send className="w-4 h-4 mr-2" />

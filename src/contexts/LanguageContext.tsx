@@ -31,6 +31,21 @@ const translations = {
     'success.title': 'Успіх',
     'error.title': 'Помилка',
 
+    // App
+    'app.title': 'DnD Менеджер',
+    'app.subtitle': 'Ваш помічник для керування кампаніями D&D',
+    'app.currentGame': 'Поточна гра',
+    'app.active': 'Активна',
+    'app.notSelected': 'Не обрано',
+    'app.theme': 'Тема',
+    'app.language': 'Мова',
+
+    // Tabs
+    'tabs.characters': 'Персонажі',
+    'tabs.dice': 'Кості',
+    'tabs.combat': 'Бій',
+    'tabs.themes': 'Теми',
+
     // Games
     'games.selectGame': 'Обрати гру',
     'games.noGameSelected': 'Гра не обрана',
@@ -69,6 +84,8 @@ const translations = {
     'characters.createNew': 'Створити персонажа',
     'characters.generateRandom': 'Випадковий персонаж',
     'characters.noCharacters': 'Немає персонажів',
+    'characters.noGameSelected': 'Гра не обрана',
+    'characters.selectGame': 'Оберіть гру в меню ліворуч',
     'characters.name': 'Ім\'я персонажа',
     'characters.namePlaceholder': 'Введіть ім\'я персонажа',
     'characters.theme': 'Тема персонажа',
@@ -85,14 +102,14 @@ const translations = {
     'invitations.inviteUserToGame': 'Запросити користувача до гри',
     'invitations.inviteEmail': 'Email користувача',
     'invitations.emailPlaceholder': 'user@example.com',
-    'invitations.emailDescription': 'Введіть email існуючого зареєстрованого користувача',
+    'invitations.emailDescription': 'Введіть email користувача (не обовʼязково зареєстрованого)',
     'invitations.role': 'Роль у грі',
     'invitations.roleViewer': 'Глядач',
     'invitations.roleEditor': 'Редактор',
     'invitations.roleOwner': 'Власник',
     'invitations.sendInvitation': 'Надіслати запрошення',
     'invitations.sending': 'Надсилання...',
-    'invitations.invitationSent': 'Запрошення надіслано',
+    'invitations.invitationSent': 'Запрошення надіслано успішно',
     'invitations.invitationAccepted': 'Запрошення прийнято',
     'invitations.invitationDeclined': 'Запрошення відхилено',
     'invitations.accept': 'Прийняти',
@@ -102,7 +119,7 @@ const translations = {
     'invitations.sendError': 'Помилка надсилання запрошення',
     'invitations.acceptError': 'Помилка прийняття запрошення',
     'invitations.declineError': 'Помилка відхилення запрошення',
-    'invitations.userNotFoundEmail': 'Користувач з таким email не знайдений. Переконайтеся, що користувач зареєстрований.',
+    'invitations.userNotFoundEmail': 'Запрошення буде надіслано на цей email',
     'invitations.alreadyInvited': 'Користувач вже запрошений до цієї гри',
     'invitations.createInviteLink': 'Створити запрошення',
     'invitations.inviteLinks': 'Посилання для запрошень',
@@ -130,6 +147,7 @@ const translations = {
     'auth.emailPlaceholder': 'Введіть ваш email',
     'auth.passwordPlaceholder': 'Введіть пароль',
     'auth.usernamePlaceholder': 'Введіть ім\'я користувача',
+    'auth.welcome': 'Вітаємо',
   },
   en: {
     // Common
@@ -153,6 +171,21 @@ const translations = {
     'common.confirm': 'Confirm',
     'success.title': 'Success',
     'error.title': 'Error',
+
+    // App
+    'app.title': 'DnD Manager',
+    'app.subtitle': 'Your D&D Campaign Management Assistant',
+    'app.currentGame': 'Current Game',
+    'app.active': 'Active',
+    'app.notSelected': 'Not Selected',
+    'app.theme': 'Theme',
+    'app.language': 'Language',
+
+    // Tabs
+    'tabs.characters': 'Characters',
+    'tabs.dice': 'Dice',
+    'tabs.combat': 'Combat',
+    'tabs.themes': 'Themes',
 
     // Games
     'games.selectGame': 'Select Game',
@@ -192,6 +225,8 @@ const translations = {
     'characters.createNew': 'Create Character',
     'characters.generateRandom': 'Random Character',
     'characters.noCharacters': 'No characters',
+    'characters.noGameSelected': 'No game selected',
+    'characters.selectGame': 'Select a game from the left menu',
     'characters.name': 'Character Name',
     'characters.namePlaceholder': 'Enter character name',
     'characters.theme': 'Character Theme',
@@ -208,14 +243,14 @@ const translations = {
     'invitations.inviteUserToGame': 'Invite User to Game',
     'invitations.inviteEmail': 'User Email',
     'invitations.emailPlaceholder': 'user@example.com',
-    'invitations.emailDescription': 'Enter email of existing registered user',
+    'invitations.emailDescription': 'Enter user email (registration not required)',
     'invitations.role': 'Role in Game',
     'invitations.roleViewer': 'Viewer',
     'invitations.roleEditor': 'Editor',
     'invitations.roleOwner': 'Owner',
     'invitations.sendInvitation': 'Send Invitation',
     'invitations.sending': 'Sending...',
-    'invitations.invitationSent': 'Invitation sent',
+    'invitations.invitationSent': 'Invitation sent successfully',
     'invitations.invitationAccepted': 'Invitation accepted',
     'invitations.invitationDeclined': 'Invitation declined',
     'invitations.accept': 'Accept',
@@ -225,7 +260,7 @@ const translations = {
     'invitations.sendError': 'Error sending invitation',
     'invitations.acceptError': 'Error accepting invitation',
     'invitations.declineError': 'Error declining invitation',
-    'invitations.userNotFoundEmail': 'User with this email not found. Make sure the user is registered.',
+    'invitations.userNotFoundEmail': 'Invitation will be sent to this email',
     'invitations.alreadyInvited': 'User is already invited to this game',
     'invitations.createInviteLink': 'Create Invitation',
     'invitations.inviteLinks': 'Invitation Links',
@@ -253,6 +288,7 @@ const translations = {
     'auth.emailPlaceholder': 'Enter your email',
     'auth.passwordPlaceholder': 'Enter password',
     'auth.usernamePlaceholder': 'Enter username',
+    'auth.welcome': 'Welcome',
   }
 };
 

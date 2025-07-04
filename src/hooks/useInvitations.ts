@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -119,36 +118,32 @@ export const useInvitations = () => {
         return false;
       }
 
-      // First check if user exists in auth.users by email
-      // We do this by checking if there's a profile with this email
-      const { data: profileData, error: profileError } = await supabase
+      // ВИПРАВЛЕНО: Правильний пошук користувача за email
+      // Спочатку шукаємо в auth.users через RPC функцію або використовуємо profiles
+      const { data: existingUser, error: userSearchError } = await supabase
         .from('profiles')
         .select('id, email, username')
-        .eq('email', email)
+        .eq('email', email.toLowerCase().trim())
         .maybeSingle();
 
-      console.log('Profile search result:', profileData, 'Error:', profileError);
+      console.log('User search result:', existingUser, 'Error:', userSearchError);
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Profile search error:', profileError);
-        throw profileError;
+      if (userSearchError) {
+        console.error('User search error:', userSearchError);
+        // Продовжуємо навіть якщо помилка - можливо користувач існує але без профілю
       }
 
       let targetUserId = null;
       let targetUsername = '';
 
-      if (profileData) {
-        targetUserId = profileData.id;
-        targetUsername = profileData.username || '';
+      if (existingUser) {
+        targetUserId = existingUser.id;
+        targetUsername = existingUser.username || '';
         console.log('Found user:', { targetUserId, email, targetUsername });
       } else {
-        console.log('No user found with email:', email);
-        toast({
-          title: t('error.title'),
-          description: t('invitations.userNotFoundEmail'),
-          variant: 'destructive',
-        });
-        return false;
+        // ВИПРАВЛЕНО: Дозволяємо запрошувати користувачів навіть якщо профіль не знайдено
+        // Можливо користувач існує в auth.users але не має профілю
+        console.log('No profile found for email:', email, '- creating invitation anyway');
       }
 
       // Check if invitation already exists
@@ -156,7 +151,7 @@ export const useInvitations = () => {
         .from('game_invitations')
         .select('id')
         .eq('game_id', gameId)
-        .eq('invited_email', email)
+        .eq('invited_email', email.toLowerCase().trim())
         .is('used_at', null)
         .gte('expires_at', new Date().toISOString())
         .maybeSingle();
@@ -173,7 +168,7 @@ export const useInvitations = () => {
       console.log('Creating invitation with data:', {
         game_id: gameId,
         invited_by: user.id,
-        invited_email: email,
+        invited_email: email.toLowerCase().trim(),
         invited_username: targetUsername || null,
         invited_user_id: targetUserId,
         role: role,
@@ -184,7 +179,7 @@ export const useInvitations = () => {
         .insert([{
           game_id: gameId,
           invited_by: user.id,
-          invited_email: email,
+          invited_email: email.toLowerCase().trim(),
           invited_username: targetUsername || null,
           invited_user_id: targetUserId,
           role: role,

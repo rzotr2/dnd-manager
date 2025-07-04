@@ -31,6 +31,11 @@ const safeJsonToFields = (json: Json): CharacterField[] => {
   return [];
 };
 
+// Helper function to convert CharacterField[] to Json
+const fieldsToJson = (fields: CharacterField[]): Json => {
+  return fields as Json;
+};
+
 export const useCharacters = (gameId: string | null) => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,14 +89,14 @@ export const useCharacters = (gameId: string | null) => {
 
       const { data, error } = await supabase
         .from('characters')
-        .insert([{
+        .insert({
           game_id: characterData.game_id,
           name: characterData.name,
           photo: characterData.photo || null,
           theme: characterData.theme || 'theme-fantasy',
-          fields: characterData.fields || [],
+          fields: fieldsToJson(characterData.fields || []),
           user_id: user.id,
-        }])
+        })
         .select()
         .single();
 
@@ -134,7 +139,7 @@ export const useCharacters = (gameId: string | null) => {
       if (updates.name !== undefined) supabaseUpdates.name = updates.name;
       if (updates.photo !== undefined) supabaseUpdates.photo = updates.photo;
       if (updates.theme !== undefined) supabaseUpdates.theme = updates.theme;
-      if (updates.fields !== undefined) supabaseUpdates.fields = updates.fields;
+      if (updates.fields !== undefined) supabaseUpdates.fields = fieldsToJson(updates.fields);
 
       const { data, error } = await supabase
         .from('characters')

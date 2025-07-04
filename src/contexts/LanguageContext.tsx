@@ -1,327 +1,275 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Language = 'uk' | 'en';
+import React, { createContext, useContext, useState } from 'react';
 
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+  language: string;
+  setLanguage: (lang: string) => void;
   t: (key: string) => string;
 }
 
 const translations = {
   uk: {
-    // App
-    'app.title': 'DnD Manager',
-    'app.subtitle': 'Повний набір інструментів для керування вашими D&D кампаніями',
-    'app.currentGame': 'Поточна гра',
-    'app.active': 'Активна',
-    'app.notSelected': 'Не вибрано',
-    'app.theme': 'Тема',
-    'app.language': 'Мова',
-    
     // Common
     'common.loading': 'Завантаження...',
-    'common.save': 'Зберегти',
+    'common.create': 'Створити',
     'common.cancel': 'Скасувати',
+    'common.save': 'Зберегти',
     'common.delete': 'Видалити',
     'common.edit': 'Редагувати',
-    'common.create': 'Створити',
-    'common.back': 'Назад',
     'common.close': 'Закрити',
+    'common.add': 'Додати',
+    'common.remove': 'Видалити',
+    'common.search': 'Пошук',
+    'common.filter': 'Фільтр',
+    'common.sort': 'Сортувати',
+    'common.back': 'Назад',
+    'common.next': 'Далі',
+    'common.previous': 'Попередній',
+    'common.submit': 'Надіслати',
+    'common.reset': 'Скинути',
     'common.confirm': 'Підтвердити',
-    'common.name': 'Назва',
-    'common.description': 'Опис',
-    
-    // Tabs
-    'tabs.characters': 'Персонажі',
-    'tabs.dice': 'Кубики',
-    'tabs.combat': 'Бій',
-    'tabs.themes': 'Теми',
-    
-    // Characters
-    'characters.noGameSelected': 'Гру не вибрано',
-    'characters.selectGame': 'Спочатку виберіть гру в бічному меню',
-    
-    // Auth
-    'auth.welcome': 'Вітаємо',
-    'auth.login': 'Увійти',
-    'auth.register': 'Зареєструватися',
-    'auth.logout': 'Вийти',
-    'auth.email': 'Електронна пошта',
-    'auth.password': 'Пароль',
-    'auth.username': 'Ім\'я користувача',
-    'auth.confirmPassword': 'Підтвердіть пароль',
-    'auth.alreadyHaveAccount': 'Вже маєте акаунт?',
-    'auth.noAccount': 'Немає акаунта?',
-    'auth.signIn': 'Увійти',
-    'auth.signUp': 'Зареєструватися',
-    'auth.loginButton': 'Увійти',
-    'auth.registerButton': 'Зареєструватися',
-    'auth.forgotPassword': 'Забули пароль?',
-    'auth.resetPassword': 'Скинути пароль',
-    'auth.emailPlaceholder': 'Введіть електронну пошту',
-    'auth.passwordPlaceholder': 'Введіть пароль',
-    'auth.usernamePlaceholder': 'Введіть ім\'я користувача',
-    
+    'success.title': 'Успіх',
+    'error.title': 'Помилка',
+
     // Games
-    'games.create': 'Створити гру',
-    'games.join': 'Приєднатися до гри',
-    'games.manage': 'Керувати грою',
-    'games.noGames': 'У вас ще немає ігор',
-    'games.createFirst': 'Створіть свою першу гру',
-    'games.selectGame': 'Оберіть гру',
-    'games.noGameSelected': 'Гру не вибрано',
+    'games.selectGame': 'Обрати гру',
+    'games.noGameSelected': 'Гра не обрана',
     'games.noGame': 'Без гри',
     'games.createNew': 'Створити нову гру',
     'games.name': 'Назва гри',
     'games.namePlaceholder': 'Введіть назву гри',
-    'games.description': 'Опис гри',
-    'games.descriptionPlaceholder': 'Введіть опис гри',
-    'games.theme': 'Тема гри',
-    'games.themePlaceholder': 'Оберіть тему',
-    'games.mode': 'Режим гри',
-    'games.modePlaceholder': 'Оберіть режим',
+    'games.description': 'Опис',
+    'games.descriptionPlaceholder': 'Опис гри (необов\'язково)',
+    'games.theme': 'Тема',
+    'games.themePlaceholder': 'Оберіть тему гри',
+    'games.mode': 'Режим',
+    'games.modePlaceholder': 'Оберіть режим гри',
     'games.yourGames': 'Ваші ігри',
+    'games.noGames': 'У вас ще немає ігор',
     'games.gameMembers': 'Учасники гри',
     'games.noMembers': 'Немає учасників',
-    
+
     // Themes
     'themes.fantasy': 'Фентезі',
-    'themes.modern': 'Сучасний',
+    'themes.modern': 'Сучасність',
     'themes.scifi': 'Наукова фантастика',
-    
+    'themes.horror': 'Жахи',
+    'themes.western': 'Вестерн',
+    'themes.cyberpunk': 'Кіберпанк',
+    'themes.steampunk': 'Стімпанк',
+    'themes.apocalypse': 'Апокаліпсис',
+    'themes.medieval': 'Середньовіччя',
+
     // Modes
     'modes.simple': 'Простий',
     'modes.advanced': 'Розширений',
-    
+
+    // Characters
+    'characters.title': 'Персонажі',
+    'characters.createNew': 'Створити персонажа',
+    'characters.generateRandom': 'Випадковий персонаж',
+    'characters.noCharacters': 'Немає персонажів',
+    'characters.name': 'Ім\'я персонажа',
+    'characters.namePlaceholder': 'Введіть ім\'я персонажа',
+    'characters.theme': 'Тема персонажа',
+    'characters.addField': 'Додати поле',
+    'characters.fieldName': 'Назва поля',
+    'characters.fieldValue': 'Значення поля',
+    'characters.removeField': 'Видалити поле',
+    'characters.editCharacter': 'Редагувати персонажа',
+    'characters.deleteConfirm': 'Ви впевнені, що хочете видалити цього персонажа?',
+
+    // Invitations
+    'invitations.title': 'Запрошення',
+    'invitations.inviteUser': 'Запросити користувача',
+    'invitations.inviteUserToGame': 'Запросити користувача до гри',
+    'invitations.inviteEmail': 'Email користувача',
+    'invitations.emailPlaceholder': 'user@example.com',
+    'invitations.emailDescription': 'Введіть email існуючого зареєстрованого користувача',
+    'invitations.role': 'Роль у грі',
+    'invitations.roleViewer': 'Глядач',
+    'invitations.roleEditor': 'Редактор',
+    'invitations.roleOwner': 'Власник',
+    'invitations.sendInvitation': 'Надіслати запрошення',
+    'invitations.sending': 'Надсилання...',
+    'invitations.invitationSent': 'Запрошення надіслано',
+    'invitations.invitationAccepted': 'Запрошення прийнято',
+    'invitations.invitationDeclined': 'Запрошення відхилено',
+    'invitations.accept': 'Прийняти',
+    'invitations.decline': 'Відхилити',
+    'invitations.noInvitations': 'Немає нових запрошень',
+    'invitations.loadError': 'Помилка завантаження запрошень',
+    'invitations.sendError': 'Помилка надсилання запрошення',
+    'invitations.acceptError': 'Помилка прийняття запрошення',
+    'invitations.declineError': 'Помилка відхилення запрошення',
+    'invitations.userNotFoundEmail': 'Користувач з таким email не знайдений. Переконайтеся, що користувач зареєстрований.',
+    'invitations.alreadyInvited': 'Користувач вже запрошений до цієї гри',
+    'invitations.createInviteLink': 'Створити запрошення',
+    'invitations.inviteLinks': 'Посилання для запрошень',
+    'invitations.createLink': 'Створити посилання',
+    'invitations.copyLink': 'Копіювати посилання',
+    'invitations.deleteLink': 'Видалити посилання',
+    'invitations.linkCopied': 'Посилання скопійовано',
+    'invitations.expires': 'Закінчується',
+    'invitations.expired': 'Закінчилось',
+
     // Members
     'members.you': 'Ви',
     'members.owner': 'Власник',
     'members.editor': 'Редактор',
     'members.viewer': 'Глядач',
-    
-    // Invitations
-    'invitations.createInviteLink': 'Створити запрошення',
-    'invitations.inviteLinks': 'Посилання запрошень',
-    'invitations.inviteEmail': 'Email для запрошення',
-    'invitations.emailPlaceholder': 'Введіть email користувача',
-    'invitations.role': 'Роль',
-    'invitations.roleViewer': 'Глядач',
-    'invitations.roleEditor': 'Редактор',
-    'invitations.roleOwner': 'Власник',
-    'invitations.createLink': 'Створити посилання',
-    'invitations.copyLink': 'Скопіювати посилання',
-    'invitations.deleteLink': 'Видалити посилання',
-    'invitations.expires': 'Дійсне до',
-    'invitations.expired': 'Прострочено',
-    'invitations.linkCopied': 'Посилання скопійовано',
-    'invitations.loadError': 'Не вдалося завантажити запрошення',
-    'invitations.sendError': 'Не вдалося надіслати запрошення',
-    'invitations.acceptError': 'Не вдалося прийняти запрошення',
-    'invitations.declineError': 'Не вдалося відхилити запрошення',
-    'invitations.userNotFoundEmail': 'Користувача з таким email не знайдено',
-    'invitations.userNotFoundUsername': 'Користувача з таким іменем не знайдено',
-    'invitations.alreadyInvited': 'Запрошення вже надіслано цьому користувачу',
-    'invitations.invitationSent': 'Запрошення надіслано успішно',
-    'invitations.invitationAccepted': 'Ви успішно приєдналися до гри',
-    'invitations.invitationDeclined': 'Запрошення відхилено',
-    
-    // Account Management
-    'account.title': 'Управління акаунтом',
-    'account.changePassword': 'Зміна паролю',
-    'account.oldPassword': 'Старий пароль',
-    'account.newPassword': 'Новий пароль',
-    'account.confirmNewPassword': 'Підтвердіть новий пароль',
-    'account.updatePassword': 'Оновити пароль',
-    'account.deleteAccount': 'Видалити акаунт',
-    'account.confirmDelete': 'Ця дія незворотна. Ваш акаунт та всі дані будуть видалені назавжди.',
-    'account.deleteConfirm': 'Так, видалити',
-    'account.back': 'Назад',
-    
-    // Success messages
-    'success.title': 'Успішно',
-    'success.loginSuccess': 'Успішний вхід в систему',
-    'success.registerSuccess': 'Реєстрацію завершено! Перевірте свою електронну пошту та перейдіть за посиланням для підтвердження акаунту.',
-    'success.logoutSuccess': 'Успішний вихід з системи',
-    'success.passwordUpdated': 'Пароль успішно оновлено',
-    'success.accountDeleted': 'Акаунт успішно видалено',
-    
-    // Error messages
-    'error.title': 'Помилка',
-    'error.fillAllFields': 'Будь ласка, заповніть всі поля',
-    'error.passwordMismatch': 'Паролі не співпадають',
-    'error.loginFailed': 'Помилка входу в систему',
-    'error.registerFailed': 'Помилка реєстрації',
-    'error.wrongOldPassword': 'Неправильний старий пароль',
-    'error.passwordUpdateFailed': 'Помилка оновлення пароля',
-    'error.accountDeleteFailed': 'Помилка видалення акаунту',
-    'error.userExists': 'Користувач з таким email та/або іменем користувача вже існує',
-    'error.emailExists': 'Користувач з таким email вже існує',
-    'error.usernameExists': 'Користувач з таким іменем користувача вже існує',
-    'error.invalidCredentials': 'Неправильний email або пароль',
-    'error.emailNotConfirmed': 'Email не підтверджено. Перевірте свою пошту',
+
+    // Auth
+    'auth.login': 'Увійти',
+    'auth.register': 'Зареєструватися',
+    'auth.logout': 'Вийти',
+    'auth.email': 'Email',
+    'auth.password': 'Пароль',
+    'auth.confirmPassword': 'Підтвердити пароль',
+    'auth.username': 'Ім\'я користувача',
+    'auth.emailPlaceholder': 'Введіть ваш email',
+    'auth.passwordPlaceholder': 'Введіть пароль',
+    'auth.usernamePlaceholder': 'Введіть ім\'я користувача',
   },
   en: {
-    // App
-    'app.title': 'DnD Manager',
-    'app.subtitle': 'Complete toolkit for managing your D&D campaigns',
-    'app.currentGame': 'Current game',
-    'app.active': 'Active',
-    'app.notSelected': 'Not selected',
-    'app.theme': 'Theme',
-    'app.language': 'Language',
-    
     // Common
     'common.loading': 'Loading...',
-    'common.save': 'Save',
+    'common.create': 'Create',
     'common.cancel': 'Cancel',
+    'common.save': 'Save',
     'common.delete': 'Delete',
     'common.edit': 'Edit',
-    'common.create': 'Create',
-    'common.back': 'Back',
     'common.close': 'Close',
+    'common.add': 'Add',
+    'common.remove': 'Remove',
+    'common.search': 'Search',
+    'common.filter': 'Filter',
+    'common.sort': 'Sort',
+    'common.back': 'Back',
+    'common.next': 'Next',
+    'common.previous': 'Previous',
+    'common.submit': 'Submit',
+    'common.reset': 'Reset',
     'common.confirm': 'Confirm',
-    'common.name': 'Name',
-    'common.description': 'Description',
-    
-    // Tabs
-    'tabs.characters': 'Characters',
-    'tabs.dice': 'Dice',
-    'tabs.combat': 'Combat',
-    'tabs.themes': 'Themes',
-    
-    // Characters
-    'characters.noGameSelected': 'No game selected',
-    'characters.selectGame': 'Please select a game from the sidebar first',
-    
-    // Auth
-    'auth.welcome': 'Welcome',
-    'auth.login': 'Login',
-    'auth.register': 'Register',
-    'auth.logout': 'Logout',
-    'auth.email': 'Email',
-    'auth.password': 'Password',
-    'auth.username': 'Username',
-    'auth.confirmPassword': 'Confirm password',
-    'auth.alreadyHaveAccount': 'Already have an account?',
-    'auth.noAccount': 'Don\'t have an account?',
-    'auth.signIn': 'Sign In',
-    'auth.signUp': 'Sign Up',
-    'auth.loginButton': 'Login',
-    'auth.registerButton': 'Register',
-    'auth.forgotPassword': 'Forgot password?',
-    'auth.resetPassword': 'Reset password',
-    'auth.emailPlaceholder': 'Enter your email',
-    'auth.passwordPlaceholder': 'Enter your password',
-    'auth.usernamePlaceholder': 'Enter your username',
-    
+    'success.title': 'Success',
+    'error.title': 'Error',
+
     // Games
-    'games.create': 'Create game',
-    'games.join': 'Join game',
-    'games.manage': 'Manage game',
-    'games.noGames': 'You don\'t have any games yet',
-    'games.createFirst': 'Create your first game',
-    'games.selectGame': 'Select game',
+    'games.selectGame': 'Select Game',
     'games.noGameSelected': 'No game selected',
-    'games.noGame': 'No game',
-    'games.createNew': 'Create new game',
-    'games.name': 'Game name',
+    'games.noGame': 'No Game',
+    'games.createNew': 'Create New Game',
+    'games.name': 'Game Name',
     'games.namePlaceholder': 'Enter game name',
-    'games.description': 'Game description',
-    'games.descriptionPlaceholder': 'Enter game description',
-    'games.theme': 'Game theme',
-    'games.themePlaceholder': 'Select theme',
-    'games.mode': 'Game mode',
-    'games.modePlaceholder': 'Select mode',
-    'games.yourGames': 'Your games',
-    'games.gameMembers': 'Game members',
+    'games.description': 'Description',
+    'games.descriptionPlaceholder': 'Game description (optional)',
+    'games.theme': 'Theme',
+    'games.themePlaceholder': 'Select game theme',
+    'games.mode': 'Mode',
+    'games.modePlaceholder': 'Select game mode',
+    'games.yourGames': 'Your Games',
+    'games.noGames': 'You have no games yet',
+    'games.gameMembers': 'Game Members',
     'games.noMembers': 'No members',
-    
+
     // Themes
     'themes.fantasy': 'Fantasy',
     'themes.modern': 'Modern',
     'themes.scifi': 'Sci-Fi',
-    
+    'themes.horror': 'Horror',
+    'themes.western': 'Western',
+    'themes.cyberpunk': 'Cyberpunk',
+    'themes.steampunk': 'Steampunk',
+    'themes.apocalypse': 'Apocalypse',
+    'themes.medieval': 'Medieval',
+
     // Modes
     'modes.simple': 'Simple',
     'modes.advanced': 'Advanced',
-    
+
+    // Characters
+    'characters.title': 'Characters',
+    'characters.createNew': 'Create Character',
+    'characters.generateRandom': 'Random Character',
+    'characters.noCharacters': 'No characters',
+    'characters.name': 'Character Name',
+    'characters.namePlaceholder': 'Enter character name',
+    'characters.theme': 'Character Theme',
+    'characters.addField': 'Add Field',
+    'characters.fieldName': 'Field Name',
+    'characters.fieldValue': 'Field Value',
+    'characters.removeField': 'Remove Field',
+    'characters.editCharacter': 'Edit Character',
+    'characters.deleteConfirm': 'Are you sure you want to delete this character?',
+
+    // Invitations
+    'invitations.title': 'Invitations',
+    'invitations.inviteUser': 'Invite User',
+    'invitations.inviteUserToGame': 'Invite User to Game',
+    'invitations.inviteEmail': 'User Email',
+    'invitations.emailPlaceholder': 'user@example.com',
+    'invitations.emailDescription': 'Enter email of existing registered user',
+    'invitations.role': 'Role in Game',
+    'invitations.roleViewer': 'Viewer',
+    'invitations.roleEditor': 'Editor',
+    'invitations.roleOwner': 'Owner',
+    'invitations.sendInvitation': 'Send Invitation',
+    'invitations.sending': 'Sending...',
+    'invitations.invitationSent': 'Invitation sent',
+    'invitations.invitationAccepted': 'Invitation accepted',
+    'invitations.invitationDeclined': 'Invitation declined',
+    'invitations.accept': 'Accept',
+    'invitations.decline': 'Decline',
+    'invitations.noInvitations': 'No new invitations',
+    'invitations.loadError': 'Error loading invitations',
+    'invitations.sendError': 'Error sending invitation',
+    'invitations.acceptError': 'Error accepting invitation',
+    'invitations.declineError': 'Error declining invitation',
+    'invitations.userNotFoundEmail': 'User with this email not found. Make sure the user is registered.',
+    'invitations.alreadyInvited': 'User is already invited to this game',
+    'invitations.createInviteLink': 'Create Invitation',
+    'invitations.inviteLinks': 'Invitation Links',
+    'invitations.createLink': 'Create Link',
+    'invitations.copyLink': 'Copy Link',
+    'invitations.deleteLink': 'Delete Link',
+    'invitations.linkCopied': 'Link copied',
+    'invitations.expires': 'Expires',
+    'invitations.expired': 'Expired',
+
     // Members
     'members.you': 'You',
     'members.owner': 'Owner',
     'members.editor': 'Editor',
     'members.viewer': 'Viewer',
-    
-    // Invitations
-    'invitations.createInviteLink': 'Create invitation',
-    'invitations.inviteLinks': 'Invitation links',
-    'invitations.inviteEmail': 'Email to invite',
-    'invitations.emailPlaceholder': 'Enter user email',
-    'invitations.role': 'Role',
-    'invitations.roleViewer': 'Viewer',
-    'invitations.roleEditor': 'Editor',
-    'invitations.roleOwner': 'Owner',
-    'invitations.createLink': 'Create link',
-    'invitations.copyLink': 'Copy link',
-    'invitations.deleteLink': 'Delete link',
-    'invitations.expires': 'Expires',
-    'invitations.expired': 'Expired',
-    'invitations.linkCopied': 'Link copied',
-    'invitations.loadError': 'Failed to load invitations',
-    'invitations.sendError': 'Failed to send invitation',
-    'invitations.acceptError': 'Failed to accept invitation',
-    'invitations.declineError': 'Failed to decline invitation',
-    'invitations.userNotFoundEmail': 'User with this email not found',
-    'invitations.userNotFoundUsername': 'User with this username not found',
-    'invitations.alreadyInvited': 'Invitation already sent to this user',
-    'invitations.invitationSent': 'Invitation sent successfully',
-    'invitations.invitationAccepted': 'You have successfully joined the game',
-    'invitations.invitationDeclined': 'Invitation declined',
-    
-    // Account Management
-    'account.title': 'Account Management',
-    'account.changePassword': 'Change Password',
-    'account.oldPassword': 'Old Password',
-    'account.newPassword': 'New Password',
-    'account.confirmNewPassword': 'Confirm New Password',
-    'account.updatePassword': 'Update Password',
-    'account.deleteAccount': 'Delete Account',
-    'account.confirmDelete': 'This action cannot be undone. Your account and all data will be permanently deleted.',
-    'account.deleteConfirm': 'Yes, delete',
-    'account.back': 'Back',
-    
-    // Success messages
-    'success.title': 'Success',
-    'success.loginSuccess': 'Successfully logged in',
-    'success.registerSuccess': 'Registration completed! Please check your email and click the confirmation link to activate your account.',
-    'success.logoutSuccess': 'Successfully logged out',
-    'success.passwordUpdated': 'Password updated successfully',
-    'success.accountDeleted': 'Account deleted successfully',
-    
-    // Error messages
-    'error.title': 'Error',
-    'error.fillAllFields': 'Please fill in all fields',
-    'error.passwordMismatch': 'Passwords do not match',
-    'error.loginFailed': 'Login failed',
-    'error.registerFailed': 'Registration failed',
-    'error.wrongOldPassword': 'Wrong old password',
-    'error.passwordUpdateFailed': 'Password update failed',
-    'error.accountDeleteFailed': 'Account deletion failed',
-    'error.userExists': 'User with this email and/or username already exists',
-    'error.emailExists': 'User with this email already exists',
-    'error.usernameExists': 'User with this username already exists',
-    'error.invalidCredentials': 'Invalid email or password',
-    'error.emailNotConfirmed': 'Email not confirmed. Please check your email',
+
+    // Auth
+    'auth.login': 'Login',
+    'auth.register': 'Register',
+    'auth.logout': 'Logout',
+    'auth.email': 'Email',
+    'auth.password': 'Password',
+    'auth.confirmPassword': 'Confirm Password',
+    'auth.username': 'Username',
+    'auth.emailPlaceholder': 'Enter your email',
+    'auth.passwordPlaceholder': 'Enter password',
+    'auth.usernamePlaceholder': 'Enter username',
   }
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('uk');
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState('uk');
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    const keys = key.split('.');
+    let value: any = translations[language as keyof typeof translations];
+    
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    
+    return value || key;
   };
 
   return (

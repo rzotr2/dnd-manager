@@ -40,46 +40,46 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ gameId }) => {
       <DialogTrigger asChild>
         <Button size="sm" className="gap-2">
           <UserPlus className="w-4 h-4" />
-          Запросити користувача
+          {t('invitations.inviteUser')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
-            Запросити користувача до гри
+            {t('invitations.inviteUserToGame')}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="user-email">
-              Email користувача
+              {t('invitations.inviteEmail')}
             </Label>
             <Input
               id="user-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t('invitations.emailPlaceholder')}
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
-              Введіть email існуючого зареєстрованого користувача
+              {t('invitations.emailDescription')}
             </p>
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="user-role">
-              Роль у грі
+              {t('invitations.role')}
             </Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="viewer">Глядач</SelectItem>
-                <SelectItem value="editor">Редактор</SelectItem>
-                <SelectItem value="owner">Власник</SelectItem>
+                <SelectItem value="viewer">{t('invitations.roleViewer')}</SelectItem>
+                <SelectItem value="editor">{t('invitations.roleEditor')}</SelectItem>
+                <SelectItem value="owner">{t('invitations.roleOwner')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +90,7 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({ gameId }) => {
             className="w-full mt-6"
           >
             <Send className="w-4 h-4 mr-2" />
-            {isLoading ? 'Надсилання...' : 'Надіслати запрошення'}
+            {isLoading ? t('invitations.sending') : t('invitations.sendInvitation')}
           </Button>
         </div>
       </DialogContent>

@@ -9,7 +9,7 @@ import { ListChecks, Plus, Users } from 'lucide-react';
 import { useGames } from '@/hooks/useGames';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import GameInvitations from './GameInvitations';
+import { getAllThemes } from '@/utils/characterGenerator';
 import InviteUserDialog from '@/components/InviteUserDialog';
 
 interface GameManagerProps {
@@ -26,6 +26,8 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
   const [newGameDescription, setNewGameDescription] = useState('');
   const [newGameTheme, setNewGameTheme] = useState('theme-fantasy');
   const [newGameMode, setNewGameMode] = useState<'simple' | 'advanced'>('simple');
+
+  const allThemes = getAllThemes();
 
   const handleGameSelect = (gameId: string) => {
     const selectedGame = games.find(game => game.id === gameId);
@@ -91,7 +93,7 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              Дії з грою
+              {t('games.gameMembers')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -138,9 +140,11 @@ const GameManager: React.FC<GameManagerProps> = ({ currentGame, onGameChange, on
                   <SelectValue placeholder={t('games.themePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="theme-fantasy">{t('themes.fantasy')}</SelectItem>
-                  <SelectItem value="theme-modern">{t('themes.modern')}</SelectItem>
-                  <SelectItem value="theme-scifi">{t('themes.scifi')}</SelectItem>
+                  {allThemes.map((theme) => (
+                    <SelectItem key={theme.key} value={theme.key}>
+                      {theme.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

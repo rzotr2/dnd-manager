@@ -58,7 +58,7 @@ const NotificationBell: React.FC = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              Запрошення до ігор
+              {t('invitations.title')}
               {unreadCount > 0 && (
                 <Badge variant="secondary" className="text-xs">
                   {unreadCount}
@@ -70,11 +70,11 @@ const NotificationBell: React.FC = () => {
           <CardContent className="p-0">
             {loading ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                Завантаження...
+                {t('common.loading')}
               </div>
             ) : invitations.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                Немає нових запрошень
+                {t('invitations.noInvitations')}
               </div>
             ) : (
               <div className="max-h-80 overflow-y-auto">
@@ -98,8 +98,7 @@ const NotificationBell: React.FC = () => {
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs flex-shrink-0">
-                          {invitation.role === 'owner' ? 'Власник' : 
-                           invitation.role === 'editor' ? 'Редактор' : 'Глядач'}
+                          {t(`members.${invitation.role}`)}
                         </Badge>
                       </div>
                       
@@ -116,7 +115,7 @@ const NotificationBell: React.FC = () => {
                           className="flex-1 h-8 text-xs"
                         >
                           <Check className="h-3 w-3 mr-1" />
-                          Прийняти
+                          {t('invitations.accept')}
                         </Button>
                         <Button
                           size="sm"
@@ -125,7 +124,7 @@ const NotificationBell: React.FC = () => {
                           className="flex-1 h-8 text-xs"
                         >
                           <X className="h-3 w-3 mr-1" />
-                          Відхилити
+                          {t('invitations.decline')}
                         </Button>
                       </div>
                     </div>

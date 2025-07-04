@@ -1,207 +1,184 @@
 
 import React, { useState, useEffect } from 'react';
-import { Users, Edit2, Trash2, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCharacters, Character } from '@/hooks/useCharacters';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Edit2, Trash2, User, Dice6, X } from 'lucide-react';
+import { useCharacters, type Character } from '@/hooks/useCharacters';
 import { useLanguage } from '@/contexts/LanguageContext';
-import CharacterImageUpload from '@/components/CharacterImageUpload';
+import { generateRandomCharacter, getBasicCharacterFields, getAllThemes } from '@/utils/characterGenerator';
+import CharacterImageUpload from './CharacterImageUpload';
 
 interface CharacterSheetProps {
-  currentGameId: string;
+  gameId: string;
+  theme: string;
 }
 
-const themes = [
-  'theme-fantasy',
-  'theme-cyberpunk',
-  'theme-steampunk',
-  'theme-horror',
-  'theme-sci-fi',
-];
-
-const getFieldTemplate = (theme: string) => {
-  switch (theme) {
-    case 'theme-fantasy':
-      return {
-        Strength: 10,
-        Dexterity: 10,
-        Constitution: 10,
-        Intelligence: 10,
-        Wisdom: 10,
-        Charisma: 10,
-      };
-    case 'theme-cyberpunk':
-      return {
-        Reflexes: 10,
-        Intelligence: 10,
-        Cool: 10,
-        TechnicalAbility: 10,
-        Luck: 10,
-        MovementAllowance: 10,
-      };
-    case 'theme-steampunk':
-      return {
-        Mechanics: 10,
-        Alchemy: 10,
-        Endurance: 10,
-        Perception: 10,
-        Charisma: 10,
-      };
-    case 'theme-horror':
-      return {
-        Sanity: 10,
-        Strength: 10,
-        Dexterity: 10,
-        Intelligence: 10,
-        Luck: 10,
-      };
-    case 'theme-sci-fi':
-      return {
-        Strength: 10,
-        Agility: 10,
-        Endurance: 10,
-        Intelligence: 10,
-        Perception: 10,
-        Charisma: 10,
-      };
-    default:
-      return {};
-  }
-};
-
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
-  const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(currentGameId);
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ gameId, theme }) => {
+  const { characters, loading, createCharacter, updateCharacter, deleteCharacter } = useCharacters(gameId);
   const { t } = useLanguage();
-
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [characterName, setCharacterName] = useState('');
-  const [characterFields, setCharacterFields] = useState<Record<string, any>>({});
-  const [selectedTheme, setSelectedTheme] = useState('theme-fantasy');
-  const [characterPhoto, setCharacterPhoto] = useState<string | null>(null);
-
   const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
+  const [newCharacterName, setNewCharacterName] = useState('');
+  const [newCharacterTheme, setNewCharacterTheme] = useState(theme);
+  const [newCharacterFields, setNewCharacterFields] = useState(getBasicCharacterFields());
+  const [newFieldName, setNewFieldName] = useState('');
+
+  const allThemes = getAllThemes();
 
   useEffect(() => {
-    setCharacterFields(getFieldTemplate(selectedTheme));
-  }, [selectedTheme]);
+    setNewCharacterTheme(theme);
+  }, [theme]);
 
   const handleCreateCharacter = async () => {
-    if (!characterName.trim()) return;
-    
-    const characterData = {
-      name: characterName,
-      game_id: currentGameId,
-      fields: characterFields,
-      theme: selectedTheme,
-      photo: characterPhoto
-    };
-    
-    const newCharacter = await createCharacter(characterData);
-    if (newCharacter) {
-      setCharacterName('');
-      setCharacterFields(getFieldTemplate(selectedTheme));
-      setCharacterPhoto(null);
-      setIsCreateDialogOpen(false);
-    }
+    if (!newCharacterName.trim()) return;
+
+    await createCharacter({
+      name: newCharacterName,
+      theme: newCharacterTheme,
+      fields: newCharacterFields,
+    });
+
+    setNewCharacterName('');
+    setNewCharacterFields(getBasicCharacterFields());
+    setIsCreateDialogOpen(false);
+  };
+
+  const handleGenerateRandom = () => {
+    const randomCharacterData = generateRandomCharacter(newCharacterTheme as any);
+    setNewCharacterName(randomCharacterData.name);
+    setNewCharacterFields(randomCharacterData.fields);
   };
 
   const handleEditCharacter = (character: Character) => {
     setEditingCharacter(character);
+    setNewCharacterName(character.name);
+    setNewCharacterTheme(character.theme || theme);
+    setNewCharacterFields(character.fields || getBasicCharacterFields());
   };
 
-  const handleSaveCharacter = async () => {
-    if (!editingCharacter) return;
+  const handleUpdateCharacter = async () => {
+    if (!editingCharacter || !newCharacterName.trim()) return;
 
-    const updated = await updateCharacter(editingCharacter.id, {
-      name: editingCharacter.name,
-      fields: editingCharacter.fields,
-      theme: editingCharacter.theme,
-      photo: editingCharacter.photo,
+    await updateCharacter(editingCharacter.id, {
+      name: newCharacterName,
+      theme: newCharacterTheme,
+      fields: newCharacterFields,
     });
 
-    if (updated) {
-      setEditingCharacter(null);
-    }
+    setEditingCharacter(null);
+    setNewCharacterName('');
+    setNewCharacterFields(getBasicCharacterFields());
   };
 
   const handleDeleteCharacter = async (characterId: string) => {
-    if (window.confirm(t('characters.confirmDelete') || 'Are you sure you want to delete this character?')) {
+    if (window.confirm(t('characters.deleteConfirm'))) {
       await deleteCharacter(characterId);
     }
   };
 
-  const handleFieldChange = (fieldName: string, value: any) => {
-    setCharacterFields(prev => ({
-      ...prev,
-      [fieldName]: value,
-    }));
+  const addNewField = () => {
+    if (newFieldName.trim()) {
+      setNewCharacterFields([...newCharacterFields, { name: newFieldName, value: '' }]);
+      setNewFieldName('');
+    }
   };
 
-  const handleEditFieldChange = (fieldName: string, value: any) => {
-    if (!editingCharacter) return;
-    setEditingCharacter({
-      ...editingCharacter,
-      fields: {
-        ...editingCharacter.fields,
-        [fieldName]: value,
-      },
-    });
+  const updateField = (index: number, key: 'name' | 'value', value: string) => {
+    const updatedFields = [...newCharacterFields];
+    updatedFields[index][key] = value;
+    setNewCharacterFields(updatedFields);
   };
+
+  const removeField = (index: number) => {
+    const updatedFields = newCharacterFields.filter((_, i) => i !== index);
+    setNewCharacterFields(updatedFields);
+  };
+
+  const resetForm = () => {
+    setNewCharacterName('');
+    setNewCharacterTheme(theme);
+    setNewCharacterFields(getBasicCharacterFields());
+    setNewFieldName('');
+    setEditingCharacter(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-3">
+          <User className="w-8 h-8 text-muted-foreground mx-auto animate-pulse" />
+          <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Character Creation Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+      {/* Character Creation/Edit Dialog */}
+      <Dialog 
+        open={isCreateDialogOpen || !!editingCharacter} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreateDialogOpen(false);
+            resetForm();
+          }
+        }}
+      >
         <DialogTrigger asChild>
-          <Button className="w-full">
-            <UserPlus className="w-4 h-4 mr-2" />
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="mb-4">
+            <Plus className="w-4 h-4 mr-2" />
             {t('characters.createNew')}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t('characters.createNew')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              {editingCharacter ? t('characters.editCharacter') : t('characters.createNew')}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
-            {/* Character Photo Upload */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Фото персонажа</Label>
-              <CharacterImageUpload
-                currentImage={characterPhoto}
-                onImageChange={setCharacterPhoto}
-              />
-            </div>
-
             {/* Character Name */}
             <div className="space-y-2">
-              <Label htmlFor="character-name" className="text-sm font-medium">
-                {t('characters.name')}
-              </Label>
-              <Input
-                id="character-name"
-                value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
-                placeholder={t('characters.namePlaceholder')}
-              />
+              <Label htmlFor="character-name">{t('characters.name')}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="character-name"
+                  placeholder={t('characters.namePlaceholder')}
+                  value={newCharacterName}
+                  onChange={(e) => setNewCharacterName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGenerateRandom}
+                  className="px-3"
+                  title={t('characters.generateRandom')}
+                >
+                  <Dice6 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
-            {/* Theme Selection */}
+            {/* Character Theme */}
             <div className="space-y-2">
-              <Label htmlFor="theme-select" className="text-sm font-medium">
-                {t('characters.theme')}
-              </Label>
-              <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                <SelectTrigger id="theme-select" className="w-full">
+              <Label htmlFor="character-theme">{t('characters.theme')}</Label>
+              <Select value={newCharacterTheme} onValueChange={setNewCharacterTheme}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {themes.map(theme => (
-                    <SelectItem key={theme} value={theme}>
-                      {theme}
+                  {allThemes.map((themeOption) => (
+                    <SelectItem key={themeOption.key} value={themeOption.key}>
+                      {themeOption.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,77 +186,112 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
             </div>
 
             {/* Character Fields */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{t('characters.fields')}</Label>
-              <div className="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto">
-                {Object.entries(characterFields).map(([fieldName, value]) => (
-                  <div key={fieldName} className="space-y-1">
-                    <Label className="text-xs">{fieldName}</Label>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Характеристики</Label>
+              </div>
+              
+              {newCharacterFields.map((field, index) => (
+                <div key={index} className="flex gap-2 items-end">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">{t('characters.fieldName')}</Label>
                     <Input
-                      type="text"
-                      value={value}
-                      onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+                      placeholder={t('characters.fieldName')}
+                      value={field.name}
+                      onChange={(e) => updateField(index, 'name', e.target.value)}
                     />
                   </div>
-                ))}
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">{t('characters.fieldValue')}</Label>
+                    <Input
+                      placeholder={t('characters.fieldValue')}
+                      value={field.value}
+                      onChange={(e) => updateField(index, 'value', e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeField(index)}
+                    className="px-2"
+                    title={t('characters.removeField')}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+
+              {/* Add New Field */}
+              <div className="flex gap-2 pt-2 border-t">
+                <Input
+                  placeholder={t('characters.addField')}
+                  value={newFieldName}
+                  onChange={(e) => setNewFieldName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addNewField()}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addNewField}
+                  disabled={!newFieldName.trim()}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
             </div>
 
-            <Button onClick={handleCreateCharacter} className="w-full">
-              {t('common.create')}
-            </Button>
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={editingCharacter ? handleUpdateCharacter : handleCreateCharacter}
+                disabled={!newCharacterName.trim()}
+                className="flex-1"
+              >
+                {editingCharacter ? t('common.save') : t('common.create')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                className="flex-1"
+              >
+                {t('common.cancel')}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Characters List */}
-      {loading ? (
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center space-y-3">
-            <Users className="w-8 h-8 text-muted-foreground mx-auto animate-pulse" />
-            <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-          </div>
-        </div>
-      ) : characters.length === 0 ? (
-        <Card className="border border-border/20">
-          <CardContent className="p-6 text-center">
-            <Users className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
-            <p className="text-base font-medium text-muted-foreground mb-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {characters.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <User className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-muted-foreground mb-2">
               {t('characters.noCharacters')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Створіть свого першого персонажа для гри
             </p>
-            <p className="text-sm text-muted-foreground">
-              {t('characters.createFirst')}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {characters.map((character) => (
-            <Card key={character.id} className={`character-card ${character.theme || 'theme-fantasy'} border border-border/20 hover:shadow-md transition-shadow`}>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('characters.createNew')}
+            </Button>
+          </div>
+        ) : (
+          characters.map((character) => (
+            <Card key={character.id} className="relative">
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {character.photo ? (
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                        <img 
-                          src={character.photo} 
-                          alt={character.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-6 h-6 text-primary" />
-                      </div>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg truncate">{character.name}</CardTitle>
+                    {character.theme && (
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {getAllThemes().find(t => t.key === character.theme)?.name || character.theme}
+                      </Badge>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-lg truncate">{character.name}</CardTitle>
-                      <p className="text-xs text-muted-foreground">
-                        {character.created_at ? new Date(character.created_at).toLocaleDateString() : ''}
-                      </p>
-                    </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0">
+                  <div className="flex gap-1 ml-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -292,110 +304,42 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ currentGameId }) => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteCharacter(character.id)}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(character.fields).map(([fieldName, value]) => (
-                    <div key={fieldName} className="space-y-1">
-                      <Label className="text-xs">{fieldName}</Label>
-                      <p className="text-sm">{value}</p>
+              <CardContent className="space-y-4">
+                {/* Character Image */}
+                <CharacterImageUpload
+                  characterId={character.id}
+                  currentImageUrl={character.photo}
+                  onImageUpdate={(url) => {
+                    // Оновлення відбудеться автоматично через хук
+                  }}
+                />
+
+                {/* Character Fields */}
+                {character.fields && character.fields.length > 0 && (
+                  <div className="space-y-2">
+                    <Separator />
+                    <div className="grid gap-2">
+                      {character.fields.map((field, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <span className="text-sm font-medium">{field.name}:</span>
+                          <span className="text-sm text-muted-foreground">{field.value}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Edit Character Dialog */}
-      {editingCharacter && (
-        <Dialog open={!!editingCharacter} onOpenChange={() => setEditingCharacter(null)}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Редагувати персонажа</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6 py-4">
-              {/* Character Photo Upload */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Фото персонажа</Label>
-                <CharacterImageUpload
-                  currentImage={editingCharacter.photo}
-                  onImageChange={(photo) => setEditingCharacter({...editingCharacter, photo})}
-                  characterId={editingCharacter.id}
-                />
-              </div>
-
-              {/* Character Name */}
-              <div className="space-y-2">
-                <Label htmlFor="edit-character-name" className="text-sm font-medium">
-                  {t('characters.name')}
-                </Label>
-                <Input
-                  id="edit-character-name"
-                  value={editingCharacter.name}
-                  onChange={(e) => setEditingCharacter({...editingCharacter, name: e.target.value})}
-                  placeholder={t('characters.namePlaceholder')}
-                />
-              </div>
-
-              {/* Theme Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="edit-theme-select" className="text-sm font-medium">
-                  {t('characters.theme')}
-                </Label>
-                <Select
-                  value={editingCharacter.theme || 'theme-fantasy'}
-                  onValueChange={(value) => setEditingCharacter({...editingCharacter, theme: value})}
-                >
-                  <SelectTrigger id="edit-theme-select" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map(theme => (
-                      <SelectItem key={theme} value={theme}>
-                        {theme}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Character Fields */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('characters.fields')}</Label>
-                <div className="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto">
-                  {Object.entries(editingCharacter.fields).map(([fieldName, value]) => (
-                    <div key={fieldName} className="space-y-1">
-                      <Label className="text-xs">{fieldName}</Label>
-                      <Input
-                        type="text"
-                        value={value}
-                        onChange={(e) => handleEditFieldChange(fieldName, e.target.value)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button onClick={handleSaveCharacter} className="flex-1">
-                  {t('common.save')}
-                </Button>
-                <Button variant="outline" onClick={() => setEditingCharacter(null)} className="flex-1">
-                  {t('common.cancel')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };
